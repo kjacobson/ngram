@@ -1,22 +1,20 @@
 class CountdownTimer {
-    constructor(duration, EventEmitter) {
+    constructor(duration, eventEmitter) {
         this.duration = duration;
         this.remaining = duration;
         this.running = false;
-        this.emitter = new EventEmitter();
+        this.emitter = eventEmitter;
         this._tick = this._tick.bind(this);
         return this;
     }
     tick() {
-        if (this.remaining % 5 === 0) {
-            console.log(this.formattedTime());
-        }
         setTimeout(this._tick, 1000);
         return this;
     }
     _tick() {
         if (this.running) {
             this.remaining--;
+            this.emitter.emit('tick', this.remaining);
             if (this.remaining) {
                 this.tick();
             } else {

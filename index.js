@@ -5,15 +5,10 @@ require('isomorphic-fetch');
 
 const fs = require('fs');
 const path = require('path');
-const readline = require('readline');
 const EventEmitter = require('events');
 
+const CliAdapter = require('./cli-adapter');
 const CountdownTimer = require('./countdown-timer');
-
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
 
 const NGRAM_DATA_DIR = './ngrams/';
 const NGRAM_FILE_SUFFIX = '-letters.json';
@@ -31,57 +26,102 @@ const nGramData = {
     seen : {},
     count : 0
 };
-const currentNGram = {
-    ngram : '',
-    words : [],
-    hash : {},
-    count : 0,
-    correct : 0
-};
-let timer;
 
-const winRound = (timer) => {
-    timer.pause(); 
-    rl.pause();
-    console.log('You win!');
-    newRound();
-};
-
-const loseRound = () => {
-    rl.pause();
-    console.log('You lose :-\(');
-    newRound();
-};
-
-const testGuess = (guess, timer) => {
-    const correctAndNew = currentNGram.hash.hasOwnProperty(guess) && currentNGram.hash[guess] === false;
-    if (correctAndNew) {
-        currentNGram.hash[guess] = true;
-        currentNGram.correct++;
-        console.log("Correct guess: " + guess);
-        console.log((currentNGram.count - currentNGram.correct) + " words to go");
-        if (currentNGram.correct === currentNGram.count) {
-            winRound(timer);
-        }
+const setObjProperty = (obj, key, val) => {
+    if (obj.hasOwnProperty(key)) {
+        obj[key] = val;
     }
-    return correctAndNew;
 };
 
-const newRound = () => {
-    const ngram = randomNGram()
-    currentNGram.ngram = ngram;
-    currentNGram.words = nGramData.hash[ngram];
-    currentNGram.count = currentNGram.words.length;
-    currentNGram.correct = 0;
-    currentNGram.hash = currentNGram.words.reduce((acc, word) => {
-        acc[word] = false;
-        return acc;
-    }, {});
-    console.log(currentNGram.hash);
-    rl.setPrompt(`What are the top ${appSettings.numWords} words beginning with ${currentNGram.ngram}?`);
-    rl.prompt();
-    timer.clear().start();
-};
+class NGramGame {
+    constructor(ioAdapter, timer) {
+        const currentNGram = {
+            ngram : '',
+            words : [],
+            hash : {},
+            count : 0,
+            guessed : 0
+        };
+        this.getCurrent = () => currentNGram;
+        this.setCurrent = (key, val) => {
+            if (typeof key === 'string') {
+                setObjProperty(currentNGram, key, val);
+            } else
+            if (typeof key === 'object') {
+                const obj = key;
+                for (let k in obj) {
+                    setObjProperty(currentNGram, k, obj[k]);
+                }
+            }
+        };
+        this.setAsGuessed = (word) => {
+            currentNGram.hash[word] = true;
+            currentNGram.guessed++;
+        };
+
+
+        this.ioAdapter = ioAdapter;
+        this.ioAdapter.emitter.on('guess', this.guess.bind(this));
+        this.timer = timer;
+        this.timer.emitter.on('zero', this.loseRound.bind(this));
+        this.timer.emitter.on('tick', (remaining) => {
+            if (remaining % 5 === 0) {
+                this.ioAdapter.showTimeRemaining(this.timer.formattedTime());
+            }
+        });
+
+        return this;
+    }
+
+    winRound() {
+        this.timer.pause();
+        this.ioAdapter.recordWin();
+        this.newRound();
+        return this;
+    }
+
+    loseRound() {
+        this.ioAdapter.recordLoss();
+        this.newRound();
+        return this;
+    }
+
+    guess(guess) {
+        const correctAndNew = this.getCurrent().hash.hasOwnProperty(guess) && this.getCurrent().hash[guess] === false;
+        if (correctAndNew) {
+            this.recordCorrectGuess(guess);
+        }
+        return this;
+    }
+
+    recordCorrectGuess(guess) {
+        this.setAsGuessed(guess);
+        if (this.getCurrent().guessed === this.getCurrent().count) {
+            this.winRound();
+        } else {
+            this.ioAdapter.recordCorrectGuess(guess, this.getCurrent().count - this.getCurrent().guessed);
+            this.ioAdapter.showProgress(this.getCurrent().hash);
+        }
+        return this;
+    }
+
+    newRound() {
+        const ngram = randomNGram()
+        const words = nGramData.hash[ngram];
+        this.setCurrent({
+            ngram : ngram,
+            words : words,
+            count : words.length,
+            guessed : 0,
+            hash : words.reduce((acc, word) => {
+                acc[word] = false;
+                return acc;
+            }, {})
+        });
+        this.ioAdapter.beginNewRound(words.length, ngram, words);
+        this.timer.clear().start();
+    }
+}
 
 const storeNGramData = (data) => {
     nGramData.hash = data;
@@ -105,7 +145,7 @@ const loadNGramData = () => {
 
 const randomNGram = () => {
     const index = Math.floor(
-        Math.random(nGramData.count) * 100
+        Math.random() * (nGramData.count)
     );
     const ngram = nGramData.arr[index];
     return nGramData.seen[ngram] ? 
@@ -114,15 +154,11 @@ const randomNGram = () => {
 };
 
 loadNGramData().then((data) => {
-    timer = new CountdownTimer(appSettings.time, EventEmitter);
-    timer.emitter.on('zero', () => {
-        loseRound();
-    });
     storeNGramData(JSON.parse(data));
-    newRound();
-    rl.on('line', (line) => {
-        line = line.trim();
-        if (testGuess(line, timer)) {
-        }
-    });
+
+    const timer = new CountdownTimer(appSettings.time, new EventEmitter());
+    const game = new NGramGame(
+        new CliAdapter(),
+        timer
+    ).newRound();
 });
