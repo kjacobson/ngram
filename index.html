@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body {
+            background-color: #3B8686;
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        nav {
+            background-color: #083550;
+            color: #fff;
+            overflow: hidden;
+            padding: 0.5em;
+        }
+        nav a {
+            color: #fff;
+            font-weight: bold;
+            line-height: 1.5em;
+            text-decoration: none;
+        }
+        nav .settings-link {
+            background: url('./gear.svg') no-repeat center center;
+            background-size: 1.5em 1.5em;
+            display: block;
+            float: right;
+            height: 1.5em;
+            text-indent: -10000px;
+            width: 1.5em;
+        }
+        h1 {
+            background: #0B486B;
+            color: #fff;
+            font-size: 1em;
+            margin: 0;
+            padding: 1em;
+            text-align: center;
+        }
+        h1 > var {
+            color: #FA6900;
+            display: block;
+            font-size: 2em;
+            font-style: normal;
+        }
+        ol {
+            list-style: none;
+            margin: 1em 0 0;
+            padding: 0;
+        }
+        ol > li {
+            background: #fff;
+            border-radius: 2px;
+            color: #052335;
+            display: block;
+            height: 1.5em;
+            line-height: 1.5em;
+            list-style: none;
+            margin: 0.5em 1em;
+            padding: 0.5em;
+        }
+        ol > li.recent {
+            background-color: #CFF09E;
+        }
+        form {
+            bottom: 0;
+            display: block;
+            left: 0;
+            margin: 0;
+            padding: 0.5em 1em;
+            position: fixed;
+            right: 0;
+        }
+        input[type="text"] {
+            background: #E0E4CC;
+            border: 0;
+            border-radius: 2px;
+            color: #052335;
+            display: block;
+            font-size: 1.5em;
+            height: 2em;
+            line-height: 2em;
+            list-style: none;
+            text-indent: 0.5em;
+            width: 100%;
+        }
+    </style>
+  </head>
+  <body>
+    <nav>
+        <a href="/">TopWords.me</a>
+        <a href="#settings" class="settings-link">Settings</a>
+    </nav>
+    <h1>
+      Top 5 words starting with
+      <var>ABE</var>
+    </h1>
+    <ol>
+      <li>abenomics</li>
+      <li class="recent">abeyance</li>
+      <li>&nbsp;</li>
+      <li>abet</li>
+      <li>abed</li>
+    </ol>
+    <form>
+      <input type="text"
+        autocapitalize="off" 
+        autocomplete="off"
+        spellcheck="false" 
+        autocorrect="off" />
+    </form>
+    <script src="./build/index.js"></script>
+  </body>
+</html>

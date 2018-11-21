@@ -1,0 +1,33 @@
+{
+    "abe" : {
+        "status" : 200,
+        "body" : [
+            {
+                "word":"aberration",
+                "score":1936
+            },{
+                "word":"aberrant",
+                "score":1554
+            },{
+                "word":"abeyance",
+                "score":1466
+            },{
+                "word":"abet",
+                "score":1330
+            },{
+                "word":"abel",
+                "score":1001
+            }
+        ]
+    },
+    "rtg" : {
+        "status": 404
+    },
+    "abc" : {
+        "status": 200,
+        "body" : [{
+            "word" : "abcess",
+            "score" : 1002
+        }]
+    }
+}
