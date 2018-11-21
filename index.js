@@ -32,6 +32,18 @@ const setObjProperty = (obj, key, val) => {
         obj[key] = val;
     }
 };
+const setViaHashOrPair = (targetObj, key, val) => {
+    console.log(key);
+    if (typeof key === 'string') {
+        setObjProperty(targetObj, key, val);
+    } else
+    if (typeof key === 'object') {
+        const obj = key;
+        for (let k in obj) {
+            setObjProperty(targetObj, k, obj[k]);
+        }
+    }
+};
 
 class NGramGame {
     constructor(ioAdapter, timer) {
@@ -43,22 +55,13 @@ class NGramGame {
             guessed : 0
         };
         this.getCurrent = () => currentNGram;
-        this.setCurrent = (key, val) => {
-            if (typeof key === 'string') {
-                setObjProperty(currentNGram, key, val);
-            } else
-            if (typeof key === 'object') {
-                const obj = key;
-                for (let k in obj) {
-                    setObjProperty(currentNGram, k, obj[k]);
-                }
-            }
+        this.setCurrent = (...args) => {
+            setViaHashOrPair(currentNGram, ...args);
         };
         this.setAsGuessed = (word) => {
             currentNGram.hash[word] = true;
             currentNGram.guessed++;
         };
-
 
         this.ioAdapter = ioAdapter;
         this.ioAdapter.emitter.on('guess', this.guess.bind(this));
