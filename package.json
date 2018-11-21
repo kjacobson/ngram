@@ -13,7 +13,7 @@
     "isomorphic-fetch": "^2.2.1"
   },
   "devDependencies": {
-    "browserify": "^16.2.2",
+    "browserify": "^16.2.3",
     "esmify": "^1.2.0"
   }
 }
