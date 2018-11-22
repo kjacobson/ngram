@@ -7,19 +7,12 @@ const fs = require('fs');
 const path = require('path');
 const EventEmitter = require('events');
 
-const CliAdapter = require('./cli-adapter');
 const CountdownTimer = require('./countdown-timer');
+const AppSettings = require('./app-settings');
 
 const NGRAM_DATA_DIR = './ngrams/';
 const NGRAM_FILE_SUFFIX = '-letters.json';
 
-const fetchSettings = () => {};
-
-const appSettings = {
-    numWords : 5,
-    numLetters : 3,
-    time : 60
-};
 const nGramData = {
     hash : {},
     arr : [],
@@ -33,7 +26,6 @@ const setObjProperty = (obj, key, val) => {
     }
 };
 const setViaHashOrPair = (targetObj, key, val) => {
-    console.log(key);
     if (typeof key === 'string') {
         setObjProperty(targetObj, key, val);
     } else
@@ -46,12 +38,11 @@ const setViaHashOrPair = (targetObj, key, val) => {
 };
 
 class NGramGame {
-    constructor(ioAdapter, timer) {
+    constructor(ioAdapter, timer, settings) {
         const currentNGram = {
             ngram : '',
             words : [],
             hash : {},
-            count : 0,
             guessed : 0
         };
         this.getCurrent = () => currentNGram;
@@ -65,6 +56,7 @@ class NGramGame {
 
         this.ioAdapter = ioAdapter;
         this.ioAdapter.emitter.on('guess', this.guess.bind(this));
+
         this.timer = timer;
         this.timer.emitter.on('zero', this.loseRound.bind(this));
         this.timer.emitter.on('tick', (remaining) => {
@@ -72,6 +64,8 @@ class NGramGame {
                 this.ioAdapter.showTimeRemaining(this.timer.formattedTime());
             }
         });
+        
+        this.settings = settings;
 
         return this;
     }
@@ -99,10 +93,10 @@ class NGramGame {
 
     recordCorrectGuess(guess) {
         this.setAsGuessed(guess);
-        if (this.getCurrent().guessed === this.getCurrent().count) {
+        if (this.getCurrent().guessed === this.settings.numWords()) {
             this.winRound();
         } else {
-            this.ioAdapter.recordCorrectGuess(guess, this.getCurrent().count - this.getCurrent().guessed);
+            this.ioAdapter.recordCorrectGuess(guess, this.settings.numWords() - this.getCurrent().guessed);
             this.ioAdapter.showProgress(this.getCurrent().hash);
         }
         return this;
@@ -110,18 +104,17 @@ class NGramGame {
 
     newRound() {
         const ngram = randomNGram()
-        const words = nGramData.hash[ngram];
+        const words = nGramData.hash[ngram].slice(0, this.settings.numWords());
         this.setCurrent({
             ngram : ngram,
             words : words,
-            count : words.length,
             guessed : 0,
             hash : words.reduce((acc, word) => {
                 acc[word] = false;
                 return acc;
             }, {})
         });
-        this.ioAdapter.beginNewRound(words.length, ngram, words);
+        this.ioAdapter.beginNewRound(this.settings.numWords(), ngram, words);
         this.timer.clear().start();
     }
 }
@@ -132,10 +125,10 @@ const storeNGramData = (data) => {
     nGramData.count = nGramData.arr.length;
 };
 
-const loadNGramData = () => {
+const loadNGramData = (ngramLength) => {
     return new Promise((resolve, reject) => {
         fs.readFile(
-            path.resolve(NGRAM_DATA_DIR, appSettings.numLetters + NGRAM_FILE_SUFFIX)
+            path.resolve(NGRAM_DATA_DIR, ngramLength + NGRAM_FILE_SUFFIX)
         , (err, data) => {
             if (err) {
                 console.log(err);
@@ -145,6 +138,21 @@ const loadNGramData = () => {
         });
     });
 };
+
+// const loadNGramData = () => {
+//     return new Promise((resolve, reject) => {
+//         fetch('https://localhost:3000/' + appSettings.numLetters + NGRAM_FILE_SUFFIX).then((response) => {
+//             if (response.status >= 400) {
+//                 // no-op
+//                 console.log("request failed");
+//                 reject();
+//             }
+//             return response.json();
+//         }).then(data => {
+//             resolve(data);
+//         });
+//     });
+// };
 
 const randomNGram = () => {
     const index = Math.floor(
@@ -156,12 +164,20 @@ const randomNGram = () => {
         ngram;
 };
 
-loadNGramData().then((data) => {
-    storeNGramData(JSON.parse(data));
+const start = (uiAdapter, settings) => {
+    const appSettings = new AppSettings(settings);
+    const timer = new CountdownTimer(appSettings.time(), new EventEmitter());
 
-    const timer = new CountdownTimer(appSettings.time, new EventEmitter());
-    const game = new NGramGame(
-        new CliAdapter(),
-        timer
-    ).newRound();
-});
+    loadNGramData(appSettings.nGramLength()).then((data) => {
+        storeNGramData(JSON.parse(data));
+        const game = new NGramGame(
+            uiAdapter,
+            timer,
+            appSettings
+        ).newRound();
+    }, (err) => {
+        console.log(err);
+    });
+};
+
+module.exports = { start };
