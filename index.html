@@ -71,7 +71,7 @@
             margin: 0;
             padding: 0.5em 1em;
             position: fixed;
-            right: 0;
+            right: 3em;
         }
         input[type="text"] {
             background: #E0E4CC;
@@ -85,6 +85,22 @@
             list-style: none;
             text-indent: 0.5em;
             width: 100%;
+        }
+
+        time {
+            bottom: 0;
+            color: #fff;
+            font-size: 2em;
+            font-style: normal;
+            font-weight: bold;
+            height: 2em;
+            line-height: 2em;
+            position: absolute;
+            right: 0.25em;
+        }
+        
+        time.low-remainder {
+            color: #f00;
         }
     </style>
   </head>
@@ -111,6 +127,7 @@
         spellcheck="false" 
         autocorrect="off" />
     </form>
+    <time class="low-remainder">:07</time>
     <script src="./build/index.js"></script>
   </body>
 </html>
