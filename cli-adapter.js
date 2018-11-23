@@ -15,8 +15,8 @@ class CliAdapter {
         this.emitter.emit('guess', line.trim());
     }
 
-    beginNewRound(numWords, ngram, answers) {
-        console.log(answers);
+    beginNewRound({numWords, ngram, words}) {
+        console.log(words);
         this.rl.setPrompt(`What are the top ${numWords} words beginning with ${ngram}?`);
         this.rl.prompt();
         console.log("\n\n");
@@ -32,13 +32,14 @@ class CliAdapter {
         console.log('You lose :-\(');
     }
 
-    recordCorrectGuess(guess, wordsToGo) {
-        console.log("Correct guess: " + guess);
-        console.log(wordsToGo + " words to go");
+    recordCorrectGuess({recentCorrectGuess, numWords, guessed, hash}) {
+        console.log("Correct guess: " + recentCorrectGuess);
+        console.log((numWords - guessed) + " words to go");
+        this.showProgress(hash);
     }
 
-    showTimeRemaining(timeRemaining) {
-        console.log(timeRemaining);
+    showTimeRemaining({remainingTime}) {
+        console.log(remainingTime);
     }
 
     showProgress(guesses) {

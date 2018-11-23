@@ -43,8 +43,11 @@ class NGramGame {
             ngram : '',
             words : [],
             hash : {},
-            guessed : 0
+            guessed : 0,
+            recentCorrectGuess : null
         };
+        let recentGuessTimer;
+
         this.getCurrent = () => currentNGram;
         this.setCurrent = (...args) => {
             setViaHashOrPair(currentNGram, ...args);
@@ -52,6 +55,11 @@ class NGramGame {
         this.setAsGuessed = (word) => {
             currentNGram.hash[word] = true;
             currentNGram.guessed++;
+            currentNGram.recentCorrectGuess = word;
+            clearTimeout(recentGuessTimer);
+            recentGuessTimer = setTimeout(() => {
+                currentNGram.recentCorrectGuess = null;
+            }, 5000);
         };
 
         this.ioAdapter = ioAdapter;
@@ -61,7 +69,7 @@ class NGramGame {
         this.timer.emitter.on('zero', this.loseRound.bind(this));
         this.timer.emitter.on('tick', (remaining) => {
             if (remaining % 5 === 0) {
-                this.ioAdapter.showTimeRemaining(this.timer.formattedTime());
+                this.ioAdapter.showTimeRemaining(this.renderData());
             }
         });
         
@@ -72,13 +80,13 @@ class NGramGame {
 
     winRound() {
         this.timer.pause();
-        this.ioAdapter.recordWin();
+        this.ioAdapter.recordWin(this.renderData());
         this.newRound();
         return this;
     }
 
     loseRound() {
-        this.ioAdapter.recordLoss();
+        this.ioAdapter.recordLoss(this.renderData());
         this.newRound();
         return this;
     }
@@ -96,8 +104,7 @@ class NGramGame {
         if (this.getCurrent().guessed === this.settings.numWords()) {
             this.winRound();
         } else {
-            this.ioAdapter.recordCorrectGuess(guess, this.settings.numWords() - this.getCurrent().guessed);
-            this.ioAdapter.showProgress(this.getCurrent().hash);
+            this.ioAdapter.recordCorrectGuess(this.renderData());
         }
         return this;
     }
@@ -114,8 +121,15 @@ class NGramGame {
                 return acc;
             }, {})
         });
-        this.ioAdapter.beginNewRound(this.settings.numWords(), ngram, words);
+        this.ioAdapter.beginNewRound(this.renderData());
         this.timer.clear().start();
+    }
+
+    renderData() {
+        return Object.assign({}, this.getCurrent(), {
+            remainingTime : this.timer.formattedTime(),
+            numWords : this.settings.numWords()
+        });
     }
 }
 
