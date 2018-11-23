@@ -27,16 +27,22 @@ const setViaHashOrPair = (targetObj, key, val) => {
     }
 };
 
+const currentNGramDefaults = () => {
+   return {
+        ngram : '',
+        words : [],
+        hash : {},
+        guessed : 0,
+        recentCorrectGuess : null,
+        inputValue : '',
+        win : false,
+        lose : false
+    }
+};
+
 class NGramGame {
     constructor(ioAdapter, timer, settings) {
-        const currentNGram = {
-            ngram : '',
-            words : [],
-            hash : {},
-            guessed : 0,
-            recentCorrectGuess : null,
-            inputValue : ''
-        };
+        const currentNGram = currentNGramDefaults();
         let recentGuessTimer;
 
         this.getCurrent = () => currentNGram;
@@ -73,12 +79,17 @@ class NGramGame {
 
     winRound() {
         this.timer.pause();
+        this.setCurrent('win', true);
         this.ioAdapter.recordWin(this.renderData());
         setTimeout(this.newRound.bind(this), 5000);
         return this;
     }
 
     loseRound() {
+        this.setCurrent({
+            inputValue : '',
+            lose : true
+        });
         this.ioAdapter.recordLoss(this.renderData());
         setTimeout(this.newRound.bind(this), 5000);
         return this;
@@ -109,17 +120,14 @@ class NGramGame {
         const words = nGramData.hash[ngram].slice(0, this.settings.numWords());
 
         nGramData.seen[ngram] = true;
-        this.setCurrent({
+        this.setCurrent(Object.assign({}, currentNGramDefaults(), {
             ngram : ngram,
             words : words,
-            guessed : 0,
-            recentCorrectGuess : null,
-            inputValue : '',
             hash : words.reduce((acc, word) => {
                 acc[word] = false;
                 return acc;
             }, {})
-        });
+        }));
         this.timer.clear().start();
         this.ioAdapter.beginNewRound(this.renderData());
     }

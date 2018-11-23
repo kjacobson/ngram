@@ -1,11 +1,11 @@
-const app = ({numWords, ngram, inputValue, hash, words, remainingTime}) => {
-    const gameOver = remainingTime === '00';
+const app = ({numWords, ngram, inputValue, hash, words, remainingTime, win, lose}) => {
     return (
         nav() +
         h1(numWords, ngram) +
-        scoreBoard(words, hash, gameOver) +
         form(inputValue) +
-        timerCountainer(remainingTime)
+        scoreBoard(words, hash, win, lose) +
+        timerCountainer(remainingTime) +
+        (win ? winNotification() : '')
     );
 };
 
@@ -23,15 +23,15 @@ const h1 = (numWords, ngram) => {
     </h1>`;
 };
 
-const scoreBoard = (words, hash, gameOver) => {
+const scoreBoard = (words, hash, win, lose) => {
     return `<ol>
-        ${words.map(wordBlank(hash, gameOver)).join('\n')}
+        ${words.map(wordBlank(hash, win, lose)).join('\n')}
     </ol>`;
 };
 
-const wordBlank = (hash, gameOver) => (word) => {
+const wordBlank = (hash, win, lose) => (word) => {
     const guessed = hash[word];
-    return `<li class="${guessed ? 'correct recent' : ''}">${guessed || gameOver ? word : '&nbsp'}</li>`;
+    return `<li class="${guessed ? 'correct recent' : (lose ? 'incorrect' : '')}">${guessed || win || lose ? word : '&nbsp'}</li>`;
 };
 
 const form = (inputValue) => {
@@ -39,7 +39,7 @@ const form = (inputValue) => {
         <input type="text"
             id="guessInput"
             value="${inputValue}"
-            placeholder="Type your guess here"
+            placeholder="Type your guess"
             autocapitalize="off" 
             autocomplete="off"
             spellcheck="false" 
@@ -55,6 +55,10 @@ const timerCountainer = (remaining) => {
 
 const timer = (remaining) => {
     return `<time id="remainingTime" class="${remaining < 10 ? 'low-remainder' : ''}">${remaining}</time>`;
+};
+
+const winNotification = () => {
+    return '<h2 id="winNotification">🎉 You won! 🎉</h2>';
 };
 
 module.exports = { appTemplate : app, timerTemplate : timer };

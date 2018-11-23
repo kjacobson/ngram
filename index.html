@@ -61,8 +61,11 @@
             margin: 0.5em 1em;
             padding: 0.5em;
         }
-        ol > li.recent {
+        ol > li.correct {
             background-color: #CFF09E;
+        }
+        ol > li.incorrect {
+            background-color: #FDDBDE;
         }
         form {
             bottom: 0;
@@ -71,7 +74,7 @@
             margin: 0;
             padding: 0.5em 1em;
             position: fixed;
-            right: 3em;
+            right: 4em;
         }
         input[type="text"] {
             background: #E0E4CC;
@@ -100,7 +103,19 @@
         }
         
         time.low-remainder {
-            color: #f00;
+            color: #F00;
+        }
+
+        #winNotification {
+            color: #FA6900;
+            display: block;
+            font-size: 6em;
+            left: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            z-index: 1;
         }
     </style>
   </head>

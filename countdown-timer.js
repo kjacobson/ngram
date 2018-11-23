@@ -46,7 +46,7 @@ class CountdownTimer {
         return this;
     }
     formattedTime () {
-        const showMinutes = this.duration / 60 > 1;
+        const showMinutes = this.duration / 60 >= 1;
         const minutes = this.remaining / 60;
         const minutesInt = Math.floor(minutes);
         let seconds = this.remaining % 60;
