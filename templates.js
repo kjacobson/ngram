@@ -1,10 +1,13 @@
-const app = ({numWords, ngram, inputValue, hash, words, remainingTime, win, lose}) => {
+const formattedTime = require('./formatted-time');
+
+const app = ({numWords, ngram, inputValue, hash, words, remainingTime, originalTime, win, lose}) => {
+    const showMinutes = originalTime / 60 >= 1;
     return (
         nav() +
         h1(numWords, ngram) +
         form(inputValue) +
         scoreBoard(words, hash, win, lose) +
-        timerCountainer(remainingTime) +
+        timerContainer(remainingTime, showMinutes) +
         (win ? winNotification() : '')
     );
 };
@@ -47,14 +50,14 @@ const form = (inputValue) => {
     </form>`;
 };
 
-const timerCountainer = (remaining) => {
-    return `<div id="timerCountainer">
-        ${timer(remaining)}
+const timerContainer = (remaining, showMinutes) => {
+    return `<div id="timerContainer">
+        ${timer(remaining, showMinutes)}
     </div>`;
 };
 
-const timer = (remaining) => {
-    return `<time id="remainingTime" class="${remaining < 10 ? 'low-remainder' : ''}">${remaining}</time>`;
+const timer = (remaining, showMinutes) => {
+    return `<time id="remainingTime" class="${remaining < 10 ? 'low-remainder' : ''}">${formattedTime(remaining, showMinutes)}</time>`;
 };
 
 const winNotification = () => {

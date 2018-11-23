@@ -2,6 +2,8 @@ const readline = require('readline');
 const path = require('path');
 // const fs = require('fs');
 
+const formattedTime = require('./formatted-time');
+
 const NGRAM_DATA_DIR = './ngrams/';
 const NGRAM_FILE_SUFFIX = '-letters.json';
 
@@ -44,7 +46,7 @@ class CliAdapter {
 
     showTimeRemaining({remainingTime}) {
         if (remainingTime % 5 === 0) {
-            console.log(remainingTime);
+            console.log(formattedTime(remainingTime, true));
         }
     }
 

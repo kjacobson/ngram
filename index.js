@@ -134,7 +134,8 @@ class NGramGame {
 
     renderData() {
         return Object.assign({}, this.getCurrent(), {
-            remainingTime : this.timer.formattedTime(),
+            originalTime : this.timer.duration,
+            remainingTime : this.timer.remaining,
             numWords : this.settings.numWords()
         });
     }

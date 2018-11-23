@@ -51,13 +51,13 @@ class BrowserAdapter {
         this.renderApp(renderData);
     }
 
-    showTimeRemaining({remainingTime}) {
-        this.updateTimer(remainingTime);
+    showTimeRemaining({remainingTime, originalTime}) {
+        this.updateTimer(remainingTime, (originalTime / 60 >= 1));
     }
 
-    updateTimer(remainingTime) {
-        document.getElementById('timerCountainer').innerHTML =
-            timerTemplate(remainingTime);
+    updateTimer(remainingTime, showMinutes) {
+        document.getElementById('timerContainer').innerHTML =
+            timerTemplate(remainingTime, showMinutes);
     }
 
     renderApp(renderData) {
