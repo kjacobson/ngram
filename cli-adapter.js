@@ -1,4 +1,9 @@
 const readline = require('readline');
+const path = require('path');
+// const fs = require('fs');
+
+const NGRAM_DATA_DIR = './ngrams/';
+const NGRAM_FILE_SUFFIX = '-letters.json';
 
 class CliAdapter {
     constructor(EventEmitter) {
@@ -38,7 +43,9 @@ class CliAdapter {
     }
 
     showTimeRemaining({remainingTime}) {
-        console.log(remainingTime);
+        if (remainingTime % 5 === 0) {
+            console.log(remainingTime);
+        }
     }
 
     showProgress(guesses) {
@@ -54,6 +61,37 @@ class CliAdapter {
         }
         console.log('  ‾‾‾');
     }
+
+
+    loadNGramData(ngramLength) {
+        return new Promise((resolve, reject) => {
+            try {
+                const data = require(
+                    path.resolve(NGRAM_DATA_DIR, ngramLength + NGRAM_FILE_SUFFIX)
+                );
+                resolve(data);
+            }
+            catch(e) {
+                console.log(e);
+                reject(e);
+            }
+        });
+    }
 }
+
+
+// const loadNGramData = (ngramLength) => {
+//     return new Promise((resolve, reject) => {
+//         fs.readFile(
+//             path.resolve(NGRAM_DATA_DIR, ngramLength + NGRAM_FILE_SUFFIX)
+//         , (err, data) => {
+//             if (err) {
+//                 console.log(err);
+//                 reject(err);
+//             }
+//             resolve(JSON.parse(data));
+//         });
+//     });
+// };
 
 module.exports = CliAdapter;

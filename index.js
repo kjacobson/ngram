@@ -1,16 +1,7 @@
 "use strict";
 
-require('es6-promise').polyfill();
-require('isomorphic-fetch');
-
-const fs = require('fs');
-const path = require('path');
-
 const CountdownTimer = require('./countdown-timer');
 const AppSettings = require('./app-settings');
-
-const NGRAM_DATA_DIR = './ngrams/';
-const NGRAM_FILE_SUFFIX = '-letters.json';
 
 const nGramData = {
     hash : {},
@@ -43,7 +34,8 @@ class NGramGame {
             words : [],
             hash : {},
             guessed : 0,
-            recentCorrectGuess : null
+            recentCorrectGuess : null,
+            inputValue : ''
         };
         let recentGuessTimer;
 
@@ -55,6 +47,7 @@ class NGramGame {
             currentNGram.hash[word] = true;
             currentNGram.guessed++;
             currentNGram.recentCorrectGuess = word;
+            currentNGram.inputValue = '';
             clearTimeout(recentGuessTimer);
             recentGuessTimer = setTimeout(() => {
                 currentNGram.recentCorrectGuess = null;
@@ -65,10 +58,11 @@ class NGramGame {
         this.ioAdapter.emitter.on('guess', this.guess.bind(this));
 
         this.timer = timer;
-        this.timer.emitter.on('zero', this.loseRound.bind(this));
+        // this.timer.emitter.on('zero', this.loseRound.bind(this));
         this.timer.emitter.on('tick', (remaining) => {
-            if (remaining % 5 === 0) {
-                this.ioAdapter.showTimeRemaining(this.renderData());
+            this.ioAdapter.showTimeRemaining(this.renderData());
+            if (remaining === 0) {
+                this.loseRound();
             }
         });
         
@@ -80,17 +74,19 @@ class NGramGame {
     winRound() {
         this.timer.pause();
         this.ioAdapter.recordWin(this.renderData());
-        this.newRound();
+        setTimeout(this.newRound.bind(this), 5000);
         return this;
     }
 
     loseRound() {
         this.ioAdapter.recordLoss(this.renderData());
-        this.newRound();
+        setTimeout(this.newRound.bind(this), 5000);
         return this;
     }
 
     guess(guess) {
+        this.setCurrent('inputValue', guess);
+
         const correctAndNew = this.getCurrent().hash.hasOwnProperty(guess) && this.getCurrent().hash[guess] === false;
         if (correctAndNew) {
             this.recordCorrectGuess(guess);
@@ -111,17 +107,21 @@ class NGramGame {
     newRound() {
         const ngram = randomNGram()
         const words = nGramData.hash[ngram].slice(0, this.settings.numWords());
+
+        nGramData.seen[ngram] = true;
         this.setCurrent({
             ngram : ngram,
             words : words,
             guessed : 0,
+            recentCorrectGuess : null,
+            inputValue : '',
             hash : words.reduce((acc, word) => {
                 acc[word] = false;
                 return acc;
             }, {})
         });
-        this.ioAdapter.beginNewRound(this.renderData());
         this.timer.clear().start();
+        this.ioAdapter.beginNewRound(this.renderData());
     }
 
     renderData() {
@@ -138,50 +138,6 @@ const storeNGramData = (data) => {
     nGramData.count = nGramData.arr.length;
 };
 
-const loadNGramData = (ngramLength) => {
-    return new Promise((resolve, reject) => {
-        try {
-            const data = require(
-                path.resolve(NGRAM_DATA_DIR, ngramLength + NGRAM_FILE_SUFFIX)
-            );
-            resolve(data);
-        }
-        catch(e) {
-            console.log(e);
-            reject(err);
-        }
-    });
-};
-
-// const loadNGramData = (ngramLength) => {
-//     return new Promise((resolve, reject) => {
-//         fs.readFile(
-//             path.resolve(NGRAM_DATA_DIR, ngramLength + NGRAM_FILE_SUFFIX)
-//         , (err, data) => {
-//             if (err) {
-//                 console.log(err);
-//                 reject(err);
-//             }
-//             resolve(JSON.parse(data));
-//         });
-//     });
-// };
-
-// const loadNGramData = (ngramLength) => {
-//     return new Promise((resolve, reject) => {
-//         fetch('http://localhost:9000/' + NGRAM_DATA_DIR + ngramLength + NGRAM_FILE_SUFFIX).then((response) => {
-//             if (response.status >= 400) {
-//                 // no-op
-//                 console.log("request failed");
-//                 reject();
-//             }
-//             return response.json();
-//         }).then(data => {
-//             resolve(JSON.parse(data));
-//         });
-//     });
-// };
-
 const randomNGram = () => {
     const index = Math.floor(
         Math.random() * (nGramData.count)
@@ -196,7 +152,7 @@ const start = (EventEmitter, uiAdapter, settings) => {
     const appSettings = new AppSettings(settings);
     const timer = new CountdownTimer(appSettings.time(), new EventEmitter());
 
-    loadNGramData(appSettings.nGramLength()).then((data) => {
+    uiAdapter.loadNGramData(appSettings.nGramLength()).then((data) => {
         storeNGramData(data);
         const game = new NGramGame(
             uiAdapter,

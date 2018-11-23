@@ -1,4 +1,30 @@
-const appTemplate = require('./templates');
+const { appTemplate, timerTemplate } = require('./templates');
+
+const NGRAM_DATA_DIR = './ngrams/';
+const NGRAM_FILE_SUFFIX = '-letters.json';
+
+
+const debounce = (fn, time, thisContext) => {
+    let timeout;
+
+    return function() {
+        const withContext = fn.apply(thisContext || this, arguments);
+        clearTimeout(timeout);
+        timeout = window.setTimeout(withContext, time);
+    }
+};
+
+const moveCursorToEnd = (el) => {
+	if (typeof el.selectionStart == "number") {
+		el.selectionStart = el.selectionEnd = el.value.length;
+        el.focus();
+	} else if (typeof el.createTextRange != "undefined") {
+		el.focus();
+		const range = el.createTextRange();
+		range.collapse(false);
+		range.select();
+	}
+}
 
 class BrowserAdapter {
     constructor(EventEmitter) {
@@ -6,38 +32,61 @@ class BrowserAdapter {
     }
 
     guess(input) {
-        this.emitter.emit('guess', input.trim());
+        this.emitter.emit('guess', input);
     }
 
     beginNewRound(renderData) {
-        renderApp(renderData);
+        this.renderApp(renderData);
     }
 
     recordWin(renderData) {
-        renderApp(renderData);
+        this.renderApp(renderData);
     }
 
     recordLoss(renderData) {
-        renderApp(renderData);
+        this.renderApp(renderData);
     }
 
     recordCorrectGuess(renderData) {
-        renderApp(renderData);
+        this.renderApp(renderData);
     }
 
-    showTimeRemaining(renderData) {
-        renderApp(renderData);
+    showTimeRemaining({remainingTime}) {
+        this.updateTimer(remainingTime);
+    }
+
+    updateTimer(remainingTime) {
+        document.getElementById('timerCountainer').innerHTML =
+            timerTemplate(remainingTime);
     }
 
     renderApp(renderData) {
         document.body.innerHTML = appTemplate(renderData);
         this.bindEvents();
+        moveCursorToEnd(document.getElementById('guessInput'));
     }
 
+    guessHandler(e) {
+        const input = e.target.value.trim();
+        this.guess(input);
+    };
+
     bindEvents() {
-        document.getElementById('guessInput').addEventListener('onkeydown', (e) => {
-            const input = e.target.value;
-            this.guess(input);
+        document.getElementById('guessInput').addEventListener('keyup', debounce(this.guessHandler, 50, this));
+    }
+
+    loadNGramData(ngramLength) {
+        return new Promise((resolve, reject) => {
+            fetch('http://localhost:9000/' + NGRAM_DATA_DIR + ngramLength + NGRAM_FILE_SUFFIX).then((response) => {
+                if (response.status >= 400) {
+                    // no-op
+                    console.log("request failed");
+                    reject();
+                }
+                return response.json();
+            }).then(data => {
+                resolve(data);
+            });
         });
     }
 }
