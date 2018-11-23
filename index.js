@@ -5,7 +5,6 @@ require('isomorphic-fetch');
 
 const fs = require('fs');
 const path = require('path');
-const EventEmitter = require('events');
 
 const CountdownTimer = require('./countdown-timer');
 const AppSettings = require('./app-settings');
@@ -141,21 +140,36 @@ const storeNGramData = (data) => {
 
 const loadNGramData = (ngramLength) => {
     return new Promise((resolve, reject) => {
-        fs.readFile(
-            path.resolve(NGRAM_DATA_DIR, ngramLength + NGRAM_FILE_SUFFIX)
-        , (err, data) => {
-            if (err) {
-                console.log(err);
-                reject(err);
-            }
+        try {
+            const data = require(
+                path.resolve(NGRAM_DATA_DIR, ngramLength + NGRAM_FILE_SUFFIX)
+            );
             resolve(data);
-        });
+        }
+        catch(e) {
+            console.log(e);
+            reject(err);
+        }
     });
 };
 
-// const loadNGramData = () => {
+// const loadNGramData = (ngramLength) => {
 //     return new Promise((resolve, reject) => {
-//         fetch('https://localhost:3000/' + appSettings.numLetters + NGRAM_FILE_SUFFIX).then((response) => {
+//         fs.readFile(
+//             path.resolve(NGRAM_DATA_DIR, ngramLength + NGRAM_FILE_SUFFIX)
+//         , (err, data) => {
+//             if (err) {
+//                 console.log(err);
+//                 reject(err);
+//             }
+//             resolve(JSON.parse(data));
+//         });
+//     });
+// };
+
+// const loadNGramData = (ngramLength) => {
+//     return new Promise((resolve, reject) => {
+//         fetch('http://localhost:9000/' + NGRAM_DATA_DIR + ngramLength + NGRAM_FILE_SUFFIX).then((response) => {
 //             if (response.status >= 400) {
 //                 // no-op
 //                 console.log("request failed");
@@ -163,7 +177,7 @@ const loadNGramData = (ngramLength) => {
 //             }
 //             return response.json();
 //         }).then(data => {
-//             resolve(data);
+//             resolve(JSON.parse(data));
 //         });
 //     });
 // };
@@ -178,12 +192,12 @@ const randomNGram = () => {
         ngram;
 };
 
-const start = (uiAdapter, settings) => {
+const start = (EventEmitter, uiAdapter, settings) => {
     const appSettings = new AppSettings(settings);
     const timer = new CountdownTimer(appSettings.time(), new EventEmitter());
 
     loadNGramData(appSettings.nGramLength()).then((data) => {
-        storeNGramData(JSON.parse(data));
+        storeNGramData(data);
         const game = new NGramGame(
             uiAdapter,
             timer,

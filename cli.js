@@ -1,3 +1,4 @@
+const EventEmitter = require('events');
 const commandLineArgs = require('command-line-args')
 
 const CliAdapter = require('./cli-adapter');
@@ -11,7 +12,7 @@ const optionDefinitions = [
 ]
 const options = commandLineArgs(optionDefinitions)
 
-index.start(new CliAdapter(), {
+index.start(EventEmitter, new CliAdapter(EventEmitter), {
     numWords : options.words,
     nGramLength : options.letters,
     time : options.time

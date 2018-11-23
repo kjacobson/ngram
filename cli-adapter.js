@@ -1,8 +1,7 @@
 const readline = require('readline');
-const EventEmitter = require('events');
 
 class CliAdapter {
-    constructor() {
+    constructor(EventEmitter) {
         this.emitter = new EventEmitter();
         this.rl = readline.createInterface({
             input: process.stdin,
