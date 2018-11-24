@@ -51,6 +51,18 @@ class BrowserAdapter {
         this.renderApp(renderData);
     }
 
+    launchSettingsEditor(renderData) {
+        this.renderApp(renderData);
+        document.getElementById('settingsForm').addEventListener('submit', this.saveSettings.bind(this));
+        document.getElementById('cancelEditSettings').addEventListener('click', this.handleSettingsCancel.bind(this));
+    }
+
+    closeSettingsEditor(renderData) {
+        document.getElementById('settingsForm').removeEventListener('submit', this.saveSettings.bind(this));
+        document.getElementById('cancelEditSettings').removeEventListener('click', this.handleSettingsCancel.bind(this));
+        this.renderApp(renderData);
+    }
+
     showTimeRemaining({remainingTime, originalTime}) {
         this.updateTimer(remainingTime, (originalTime / 60 >= 1));
     }
@@ -58,6 +70,36 @@ class BrowserAdapter {
     updateTimer(remainingTime, showMinutes) {
         document.getElementById('timerContainer').innerHTML =
             timerTemplate(remainingTime, showMinutes);
+    }
+
+    handleSettingsOpen(e) {
+        e.preventDefault();
+        this.emitter.emit('edit-settings');
+    }
+
+    handleSettingsCancel(e) {
+        e.preventDefault();
+        this.emitter.emit('cancel-edit-settings');
+    }
+
+    saveSettings(e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const ngramLength = parseInt(
+            document.getElementById('numberOfLettersSelector').value
+        );
+        const numWords = parseInt(
+            document.getElementById('numberOfWordsSelector').value
+        );
+        const time = parseInt(
+            document.getElementById('timeLimitSelector').value
+        );
+        this.emitter.emit('settings-change', {
+            ngramLength,
+            numWords,
+            time
+        });
     }
 
     renderApp(renderData) {
@@ -73,6 +115,7 @@ class BrowserAdapter {
 
     bindEvents() {
         document.getElementById('guessInput').addEventListener('keyup', debounce(this.guessHandler, 50, this));
+        document.getElementById('settingsLink').addEventListener('click', this.handleSettingsOpen.bind(this));
     }
 
     loadNGramData(ngramLength) {

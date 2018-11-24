@@ -8,7 +8,7 @@ class CountdownTimer {
         return this;
     }
     tick() {
-        setTimeout(this._tick, 1000);
+        this.nextTick = setTimeout(this._tick, 1000);
         return this;
     }
     _tick() {
@@ -30,10 +30,12 @@ class CountdownTimer {
         return this;
     }
     pause () {
+        clearTimeout(this.nextTick);
         this.running = false;
         return this;
     }
     clear () {
+        clearTimeout(this.nextTick);
         this.running = false;
         this.remaining = this.duration;
         return this;

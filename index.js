@@ -36,7 +36,8 @@ const currentNGramDefaults = () => {
         recentCorrectGuess : null,
         inputValue : '',
         win : false,
-        lose : false
+        lose : false,
+        editingSettings : false
     }
 };
 
@@ -62,6 +63,9 @@ class NGramGame {
 
         this.ioAdapter = ioAdapter;
         this.ioAdapter.emitter.on('guess', this.guess.bind(this));
+        this.ioAdapter.emitter.on('settings-change', this.changeSettings.bind(this));
+        this.ioAdapter.emitter.on('edit-settings', this.launchSettingsEditor.bind(this));
+        this.ioAdapter.emitter.on('cancel-edit-settings', this.closeSettingsEditor.bind(this));
 
         this.timer = timer;
         // this.timer.emitter.on('zero', this.loseRound.bind(this));
@@ -128,15 +132,37 @@ class NGramGame {
                 return acc;
             }, {})
         }));
+        if (this.settings.time() !== this.timer.duration) {
+            this.timer.changeDuration(this.settings.time());
+        }
         this.timer.clear().start();
         this.ioAdapter.beginNewRound(this.renderData());
+    }
+
+    launchSettingsEditor() {
+        this.timer.pause();
+        this.setCurrent('editingSettings', true);
+        this.ioAdapter.launchSettingsEditor(this.renderData());
+    }
+
+    changeSettings(settings) {
+        this.settings.reset(settings);
+        this.setCurrent('editingSettings', false);
+        this.newRound();
+    }
+
+    closeSettingsEditor() {
+        this.setCurrent('editingSettings', false);
+        this.ioAdapter.closeSettingsEditor(this.renderData());
+        this.timer.start();
     }
 
     renderData() {
         return Object.assign({}, this.getCurrent(), {
             originalTime : this.timer.duration,
             remainingTime : this.timer.remaining,
-            numWords : this.settings.numWords()
+            numWords : this.settings.numWords(),
+            ngramLength : this.settings.nGramLength()
         });
     }
 }
