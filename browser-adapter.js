@@ -1,6 +1,6 @@
 const { appTemplate, timerTemplate } = require('./templates');
 
-const NGRAM_DATA_DIR = './ngrams/';
+const NGRAM_DATA_DIR = '/ngrams/';
 const NGRAM_FILE_SUFFIX = '-letters.json';
 
 
@@ -120,7 +120,7 @@ class BrowserAdapter {
 
     loadNGramData(ngramLength) {
         return new Promise((resolve, reject) => {
-            fetch('http://localhost:9000/' + NGRAM_DATA_DIR + ngramLength + NGRAM_FILE_SUFFIX).then((response) => {
+            fetch('//' + window.location.host + NGRAM_DATA_DIR + ngramLength + NGRAM_FILE_SUFFIX).then((response) => {
                 if (response.status >= 400) {
                     // no-op
                     console.log("request failed");
