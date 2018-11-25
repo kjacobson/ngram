@@ -14,13 +14,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "browserify": "^16.2.3",
     "command-line-args": "^5.0.2",
     "emittery": "^0.4.1",
     "es6-promise": "^4.2.4",
     "isomorphic-fetch": "^2.2.1"
   },
   "devDependencies": {
-    "browserify": "^16.2.3",
     "esmify": "^1.2.0"
   }
 }
