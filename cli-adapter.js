@@ -18,7 +18,7 @@ class CliAdapter {
     }
 
     guess(line) {
-        this.emitter.emit('guess', line.trim());
+        this.emitter.emit('guess', line.trim().toLowerCase());
     }
 
     beginNewRound({numWords, ngram, words}) {

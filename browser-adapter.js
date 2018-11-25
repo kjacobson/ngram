@@ -109,7 +109,7 @@ class BrowserAdapter {
     }
 
     guessHandler(e) {
-        const input = e.target.value.trim();
+        const input = e.target.value.trim().toLowerCase();
         this.guess(input);
     };
 
