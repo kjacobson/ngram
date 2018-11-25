@@ -120,7 +120,7 @@ class BrowserAdapter {
 
     loadNGramData(ngramLength) {
         return new Promise((resolve, reject) => {
-            fetch('//' + window.location.host + NGRAM_DATA_DIR + ngramLength + NGRAM_FILE_SUFFIX).then((response) => {
+            fetch('.' + NGRAM_DATA_DIR + ngramLength + NGRAM_FILE_SUFFIX).then((response) => {
                 if (response.status >= 400) {
                     // no-op
                     console.log("request failed");
