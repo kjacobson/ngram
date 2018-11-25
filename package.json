@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm install && npm run browser",
+    "start": "npm run browser",
     "cli": "node cli.js",
     "server": "node static-server.js",
     "browserify": "browserify browser.js > build/browser.js",
