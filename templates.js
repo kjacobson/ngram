@@ -6,8 +6,8 @@ const app = ({numWords, ngramLength, ngram, inputValue, hash, words, remainingTi
         nav() +
         h1(numWords, ngram) +
         form(inputValue) +
-        scoreBoard(words, hash, win, lose) +
         timerContainer(remainingTime, showMinutes) +
+        scoreBoard(words, hash, win, lose) +
         (win ? winNotification() : '') +
         (editingSettings ? settingsEditor(ngramLength, numWords, originalTime) : '')
     );

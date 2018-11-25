@@ -5,7 +5,5 @@ module.exports = formattedTime = (remaining, showMinutes = false) => {
     if (seconds < 10) {
         seconds = '0' + seconds;
     }
-    return showMinutes || minutesInt ?
-        minutesInt + ':' + seconds :
-        seconds + '';
+    return (minutesInt || '') + ':' + seconds;
 };
