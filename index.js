@@ -146,9 +146,21 @@ class NGramGame {
     }
 
     changeSettings(settings) {
+        let load = false;
+        if (settings.ngramLength !== this.settings.nGramLength()) {
+            load = true;
+        }
         this.settings.reset(settings);
         this.setCurrent('editingSettings', false);
-        this.newRound();
+
+        if (load) {
+            this.ioAdapter.loadNGramData(this.settings.nGramLength()).then((data) => {
+                storeNGramData(data);
+                this.newRound();
+            });
+        } else {
+            this.newRound();
+        }
     }
 
     closeSettingsEditor() {

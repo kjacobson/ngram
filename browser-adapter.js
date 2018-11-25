@@ -86,7 +86,7 @@ class BrowserAdapter {
         e.preventDefault();
 
         const form = e.target;
-        const ngramLength = parseInt(
+        const nGramLength = parseInt(
             document.getElementById('numberOfLettersSelector').value
         );
         const numWords = parseInt(
@@ -96,7 +96,7 @@ class BrowserAdapter {
             document.getElementById('timeLimitSelector').value
         );
         this.emitter.emit('settings-change', {
-            ngramLength,
+            nGramLength,
             numWords,
             time
         });
