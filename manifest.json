@@ -1,7 +1,7 @@
 {
   "name": "TopWords.me",
   "short_name": "TopWords",
-  "display": "minimal-ui",
+  "display": "standalone",
   "description": "Guess the most common words starting with various letter combinations.",
   "start_url": "/",
   "theme_color": "#3B8686",
