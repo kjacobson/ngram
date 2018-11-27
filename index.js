@@ -3,10 +3,38 @@
 const CountdownTimer = require('./countdown-timer');
 const AppSettings = require('./app-settings');
 
+const SEEN_STORAGE_KEY = 'seenNGrams';
+
+const retrieveSeenCache = () => {
+    let seenNGrams = localStorage.getItem(SEEN_STORAGE_KEY);
+    if (seenNGrams) {
+        try {
+            seenNGrams = Object.assign({}, JSON.parse(seenNGrams));
+        }
+        catch(err) {
+            console.log(err);
+            seenNGrams = {};
+        }
+    } else {
+        seenNGrams = {};
+    }
+    return seenNGrams;
+};
+
+const updateSeenCache = (seenData) => {
+    try {
+        let data = JSON.stringify(seenData);
+        localStorage.setItem(SEEN_STORAGE_KEY, data);
+    }
+    catch(err) {
+        console.log(err);
+    }
+};
+
 const nGramData = {
     hash : {},
     arr : [],
-    seen : {},
+    seen : retrieveSeenCache(),
     count : 0
 };
 
@@ -123,7 +151,6 @@ class NGramGame {
         const ngram = randomNGram()
         const words = nGramData.hash[ngram].slice(0, this.settings.numWords());
 
-        nGramData.seen[ngram] = true;
         this.setCurrent(Object.assign({}, currentNGramDefaults(), {
             ngram : ngram,
             words : words,
@@ -137,6 +164,9 @@ class NGramGame {
         }
         this.timer.clear().start();
         this.ioAdapter.beginNewRound(this.renderData());
+
+        nGramData.seen[ngram] = true;
+        updateSeenCache(nGramData.seen);
     }
 
     launchSettingsEditor() {
@@ -147,7 +177,7 @@ class NGramGame {
 
     changeSettings(settings) {
         let load = false;
-        if (settings.ngramLength !== this.settings.nGramLength()) {
+        if (settings.nGramLength !== this.settings.nGramLength()) {
             load = true;
         }
         this.settings.reset(settings);
@@ -183,15 +213,23 @@ const storeNGramData = (data) => {
     nGramData.hash = data;
     nGramData.arr = Object.keys(data);
     nGramData.count = nGramData.arr.length;
+    nGramData.seen = {};
+
+    updateSeenCache({});
 };
 
-const randomNGram = () => {
+const randomNGram = (i = 0) => {
+    if (i >= nGramData.count) {
+        nGramData.seen = {};
+        updateSeenCache({});
+    }
+
     const index = Math.floor(
         Math.random() * (nGramData.count)
     );
     const ngram = nGramData.arr[index];
     return nGramData.seen[ngram] ? 
-        randomNGram() :
+        randomNGram(i+1) :
         ngram;
 };
 
