@@ -117,7 +117,7 @@ class BrowserAdapter {
         document.getElementById('guessInput').addEventListener('keyup', debounce(this.guessHandler, 50, this));
         document.getElementById('settingsLink').addEventListener('click', this.handleSettingsOpen.bind(this));
         document.addEventListener('keypress', (e) => {
-            if (e.keyCode === 13 || e.code === "Enter") {
+            if ((e.keyCode === 13 || e.code === "Enter") && e.target.id === 'guessInput') {
                 e.preventDefault();
             }
         });
