@@ -5,8 +5,7 @@ const app = ({numWords, ngramLength, ngram, inputValue, hash, words, remainingTi
     return (
         nav() +
         h1(numWords, ngram) +
-        form(inputValue) +
-        timerContainer(remainingTime, showMinutes) +
+        form(inputValue, remainingTime, showMinutes) +
         scoreBoard(words, hash, win, lose) +
         (win ? winNotification() : '') +
         (editingSettings ? settingsEditor(ngramLength, numWords, originalTime) : '')
@@ -38,7 +37,7 @@ const wordBlank = (hash, win, lose) => (word) => {
     return `<li class="${guessed ? 'correct recent' : (lose ? 'incorrect' : '')}">${guessed || win || lose ? word : '&nbsp'}</li>`;
 };
 
-const form = (inputValue) => {
+const form = (inputValue, remainingTime, showMinutes) => {
     return `<form class="guess-word">
         <input type="text"
             id="guessInput"
@@ -48,6 +47,7 @@ const form = (inputValue) => {
             autocomplete="off"
             spellcheck="false" 
             autocorrect="off" />
+        ${timerContainer(remainingTime, showMinutes)}
     </form>`;
 };
 
