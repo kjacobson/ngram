@@ -14,7 +14,7 @@ const app = ({numWords, ngramLength, ngram, inputValue, hash, words, remainingTi
 
 const nav = () => {
     return `<nav>
-        <a href="/">TopWords.me</a>
+        <a href="/" id="homeLink" class="home-link">TopWords.me</a>
         <a href="#settings" id="settingsLink" class="settings-link">Settings</a>
     </nav>`;
 };
