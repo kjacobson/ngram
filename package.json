@@ -18,7 +18,8 @@
     "command-line-args": "^5.0.2",
     "emittery": "^0.4.1",
     "es6-promise": "^4.2.4",
-    "isomorphic-fetch": "^2.2.1"
+    "isomorphic-fetch": "^2.2.1",
+    "md5": "^2.2.1"
   },
   "devDependencies": {
     "esmify": "^1.2.0"
