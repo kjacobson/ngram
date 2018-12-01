@@ -4,17 +4,18 @@ const path = require('path');
 
 const formattedTime = require('./formatted-time');
 
-const NGRAM_DATA_DIR = './ngrams/';
+const NGRAM_DATA_DIR = './static/ngrams/';
 const NGRAM_FILE_SUFFIX = '-letters.json';
 
 class CliAdapter {
-    constructor(EventEmitter) {
+    constructor(EventEmitter, debug) {
         this.emitter = new EventEmitter();
         this.rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout
         }); 
         this.rl.on('line', this.guess.bind(this));
+        this.debug = debug;
     }
 
     guess(line) {
@@ -22,8 +23,10 @@ class CliAdapter {
     }
 
     beginNewRound({numWords, ngram, words}) {
-        console.log(words);
         this.rl.setPrompt(`What are the top ${numWords} words beginning with ${ngram}?`);
+        if (this.debug) {
+            console.log(words);
+        }
         this.rl.prompt();
         console.log("\n\n");
     }
@@ -46,7 +49,9 @@ class CliAdapter {
 
     showTimeRemaining({remainingTime}) {
         if (remainingTime % 5 === 0) {
+            console.log('\n');
             console.log(formattedTime(remainingTime, true));
+            console.log('\n');
         }
     }
 
@@ -64,6 +69,14 @@ class CliAdapter {
         console.log('  ‾‾‾');
     }
 
+    retrieveSeenCache() {
+        console.log('Caching of seen words not implemented yet');
+        return {};
+    }
+
+    updateSeenCache(seenData) {
+        console.log('Caching of seen words not implemented yet');
+    }
 
     loadNGramData(ngramLength) {
         return new Promise((resolve, reject) => {

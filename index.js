@@ -3,40 +3,16 @@
 const CountdownTimer = require('./countdown-timer');
 const AppSettings = require('./app-settings');
 
-const SEEN_STORAGE_KEY = 'seenNGrams';
 
-const retrieveSeenCache = () => {
-    let seenNGrams = localStorage.getItem(SEEN_STORAGE_KEY);
-    if (seenNGrams) {
-        try {
-            seenNGrams = Object.assign({}, JSON.parse(seenNGrams));
-        }
-        catch(err) {
-            console.log(err);
-            seenNGrams = {};
-        }
-    } else {
-        seenNGrams = {};
-    }
-    return seenNGrams;
+const nGramDataDefaults = () => {
+    return {
+        hash : {},
+        arr : [],
+        seen : {},
+        count : 0
+    };
 };
-
-const updateSeenCache = (seenData) => {
-    try {
-        let data = JSON.stringify(seenData);
-        localStorage.setItem(SEEN_STORAGE_KEY, data);
-    }
-    catch(err) {
-        console.log(err);
-    }
-};
-
-const nGramData = {
-    hash : {},
-    arr : [],
-    seen : retrieveSeenCache(),
-    count : 0
-};
+let nGramData;
 
 const setObjProperty = (obj, key, val) => {
     if (obj.hasOwnProperty(key)) {
@@ -166,7 +142,7 @@ class NGramGame {
         this.ioAdapter.beginNewRound(this.renderData());
 
         nGramData.seen[ngram] = true;
-        updateSeenCache(nGramData.seen);
+        this.ioAdapter.updateSeenCache(nGramData.seen);
     }
 
     launchSettingsEditor() {
@@ -185,7 +161,7 @@ class NGramGame {
 
         if (load) {
             this.ioAdapter.loadNGramData(this.settings.nGramLength()).then((data) => {
-                storeNGramData(data);
+                nGramData = storeNGramData(data, nGramData.seen);
                 this.newRound();
             });
         } else {
@@ -209,13 +185,16 @@ class NGramGame {
     }
 }
 
-const storeNGramData = (data) => {
-    nGramData.hash = data;
-    nGramData.arr = Object.keys(data);
-    nGramData.count = nGramData.arr.length;
-    nGramData.seen = {};
-
-    updateSeenCache({});
+const storeNGramData = (data, seen) => {
+    const _nGramData = Object.assign(nGramDataDefaults(), {
+        hash : data,
+        arr : Object.keys(data),
+        count : Object.keys(data).length,
+    });
+    if (seen) {
+        _nGramData.seen = seen;
+    }
+    return _nGramData;
 };
 
 const randomNGram = (i = 0) => {
@@ -233,14 +212,14 @@ const randomNGram = (i = 0) => {
         ngram;
 };
 
-const start = (EventEmitter, uiAdapter, settings) => {
+const start = (EventEmitter, ioAdapter, settings) => {
     const appSettings = new AppSettings(settings);
     const timer = new CountdownTimer(appSettings.time(), new EventEmitter());
 
-    uiAdapter.loadNGramData(appSettings.nGramLength()).then((data) => {
-        storeNGramData(data);
+    ioAdapter.loadNGramData(appSettings.nGramLength()).then((data) => {
+        nGramData = storeNGramData(data, ioAdapter.retrieveSeenCache());
         const game = new NGramGame(
-            uiAdapter,
+            ioAdapter,
             timer,
             appSettings
         ).newRound();

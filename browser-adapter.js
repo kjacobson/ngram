@@ -1,8 +1,12 @@
 const { appTemplate, timerTemplate } = require('./templates');
 
-const NGRAM_DATA_DIR = '/ngrams/';
-const NGRAM_FILE_SUFFIX = '-letters.json';
+// This verbose syntax is so the cache-busting script notices these URLs
+const NGRAM_FILES = {
+    2 : './build/ngrams/2-letters.json',
+    3 : './build/ngrams/3-letters.json'
+};
 
+const SEEN_STORAGE_KEY = 'seenNGrams';
 
 const debounce = (fn, time, thisContext) => {
     let timeout;
@@ -123,9 +127,35 @@ class BrowserAdapter {
         });
     }
 
+    retrieveSeenCache() {
+        let seenNGrams = localStorage.getItem(SEEN_STORAGE_KEY);
+        if (seenNGrams) {
+            try {
+                seenNGrams = Object.assign({}, JSON.parse(seenNGrams));
+            }
+            catch(err) {
+                console.log(err);
+                seenNGrams = {};
+            }
+        } else {
+            seenNGrams = {};
+        }
+        return seenNGrams;
+    }
+
+    updateSeenCache(seenData) {
+        try {
+            let data = JSON.stringify(seenData);
+            localStorage.setItem(SEEN_STORAGE_KEY, data);
+        }
+        catch(err) {
+            console.log(err);
+        }
+    }
+
     loadNGramData(ngramLength) {
         return new Promise((resolve, reject) => {
-            fetch('.' + NGRAM_DATA_DIR + ngramLength + NGRAM_FILE_SUFFIX).then((response) => {
+            fetch(NGRAM_FILES[ngramLength]).then((response) => {
                 if (response.status >= 400) {
                     // no-op
                     console.log("request failed");
