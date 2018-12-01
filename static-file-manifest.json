@@ -1,1 +1,28 @@
-{"browser.js":"4c248b38c6e64b6a476acc07194ed89c"}
+{
+    "assets": {
+        "./browser.js": "62ae530b0c446ac25d5a515eadc006f3",
+        "./site.webmanifest": "83978adb651693f2bcac2ac2ae49e144",
+        "./sw.js": "6512404e215bd830ad0ddd286b8cc3d8",
+        "./ngrams/3-letters.json": "12208b5eae031284f25f55631055fc10",
+        "./ngrams/2-letters.json": "227bd8c42252d2d3449c4bdbba520649",
+        "./images/gear.svg": "93a4c5f7347a4a404154ecbe4705a760",
+        "./images/android-chrome-192x192.png": "366a0964657ef4cbdeeabb3b8e6487da",
+        "./images/favicon-32x32.png": "51c1926b626e8cffe1f17743c125eb74",
+        "./images/mstile-310x150.png": "c556f843848eb8bdc68426b147b4f0b4",
+        "./images/spinning-top.svg": "83f3a849ccb0f5f0bdd4926eb2dbba22",
+        "./images/android-chrome-512x512.png": "0504b07af2a3b782f4103f78c139901c",
+        "./images/mstile-310x310.png": "9b11c1334106a2c2dc21ff7fdd5693a2",
+        "./images/apple-touch-icon.png": "ff40c8de495a2b923a422f457b7b2c58",
+        "./images/mstile-144x144.png": "c77007b3567c4b49f17311ed40db23bc",
+        "./images/mstile-70x70.png": "6dd2fca3e0a4409570b520dca0f8fd3b",
+        "./images/favicon-16x16.png": "a42221b13db798500172d6abe92e0254",
+        "./images/mstile-150x150.png": "c241707bb63b2cb220d500480c4e9620",
+        "./images/safari-pinned-tab.svg": "46154afa6bf5d6a22db6a01aa6c00620"
+    },
+    "consumers": [
+        "./index.html",
+        "./browser.js",
+        "./sw.js",
+        "./site.webmanifest"
+    ]
+}

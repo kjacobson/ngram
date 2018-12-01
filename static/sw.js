@@ -15,13 +15,10 @@ self.addEventListener('install', function(e) {
     e.waitUntil(
         caches.open('topwords-cache').then(function(cache) {
             return cache.addAll([
-                '/',
-                './index.html',
-                './top2.png',
-                './manifest.json',
+                './build/site.webmanifest',
                 './build/browser.js',
-                './ngram/3-letters.json',
-                './ngram/2-letters.json'
+                './build/ngrams/3-letters.json',
+                './build/ngrams/2-letters.json'
             ]);
         })
     );

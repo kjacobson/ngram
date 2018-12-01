@@ -1,29 +1,61 @@
 const fs = require('fs');
 const path = require('path');
+const readline = require('readline');
 const md5 = require('md5');
+const mkdirp = require('mkdirp');
 
 const STATIC_DIR = './static';
 const BUILD_DIR = './build';
 const MANIFEST_LOCATION = './static-file-manifest.json';
 
-const staticFiles = require(MANIFEST_LOCATION);
+const QUOTE_REGEX = "([\"'])";
+const BUILD_DIR_REGEX = "\.\/build\/";
+const PATH_CHARS_REGEX = "([a-zA-Z0-9\-\_\.\/]+)";
+const MD5_REGEX = "(?:\\+[a-f0-9]{32})?";
+const FILE_EXTENSION_REGEX = "(\.(?:js|gif|jpeg|jpg|html|webmanifest|json|png|svg))";
+const STATIC_LINK_REGEX = new RegExp(QUOTE_REGEX + BUILD_DIR_REGEX + PATH_CHARS_REGEX + MD5_REGEX + FILE_EXTENSION_REGEX + QUOTE_REGEX, 'g');
+
+const staticFileManifest = require(MANIFEST_LOCATION);
+const staticFiles = staticFileManifest.assets;
+const staticFileConsumers = staticFileManifest.consumers;
+
+const ensureDirectory = (loc) => {
+    return new Promise((resolve, reject) => {
+        fs.stat(loc, (err, stat) => {
+            if (err && err.code === 'ENOENT') {
+                mkdirp(loc, (err) => {
+                    if (err) {
+                        console.error("Directory " + loc + " does not exist and could not be created");
+                        reject(err);
+                    } else {
+                        console.info("Created director " + loc + ", which did not previously exist");
+                        resolve();
+                    }
+                });
+            } else
+            if (stat && stat.isDirectory()) {
+                resolve();
+            }
+        });
+    });
+};
 
 const filePath = (filePath, dirPath, hash) => {
     if (hash) {
         const lastDot = filePath.lastIndexOf('.');
-        const [path, extension] = [
+        const [loc, extension] = lastDot > -1 ? [
             filePath.substring(0, lastDot), 
             filePath.substring(lastDot)
-        ];
-        filePath = path + '-' + hash + extension;
+        ] : [filePath, ''];
+        filePath = loc + '+' + hash + extension;
     }
     return path.resolve(dirPath, filePath);
 };
 
 
-const hashFile = (path) => {
+const hashFile = (loc) => {
     return new Promise((resolve, reject) => {
-        fs.readFile(path, (error, data) => {
+        fs.readFile(loc, (error, data) => {
             if (error) {
                 reject(error);
             } else {
@@ -33,62 +65,127 @@ const hashFile = (path) => {
     });
 };
 
-const processFile = (path) => {
-    const oldHash = staticFiles[path];
-    const staticPath = filePath(path, STATIC_DIR);
+const processFile = (loc) => {
+    const oldHash = staticFiles[loc];
+    const staticPath = filePath(loc, STATIC_DIR);
 
     return new Promise((resolve, reject) => {
         hashFile(staticPath).then((hash) => {
             if (oldHash !== hash) {
-                staticFiles[path] = hash;
-                replaceFile(oldHash, hash, path).then(resolve);
+                staticFiles[loc] = hash;
+                replaceFile(oldHash, hash, loc).then(resolve);
             } else {
-                resolve();
-                console.log("Nothing to change for file " + path);
+                const oldFilePath = filePath(loc, BUILD_DIR, oldHash);
+                if (fs.existsSync(oldFilePath)) {
+                    console.info("Nothing changed in file " + loc);
+                    resolve();
+                } else {
+                    replaceFile(oldHash, hash, loc).then(resolve);
+                }
             }
         }, (error) => {
-            console.log("Error hashing file " + path);
-            console.log(error);
+            console.error("Error hashing file " + loc);
+            console.error(error);
         });
     });
 };
 
-const replaceFile = (oldHash, newHash, path) => {
-    const sourceFilePath = filePath(path, STATIC_DIR);
-    const newFilePath = filePath(path, BUILD_DIR, newHash);
-    const oldFilePath = filePath(path, BUILD_DIR, oldHash);
-
+const copyFile = (sourceFilePath, newFilePath) => {
     return new Promise((resolve, reject) => {
         fs.copyFile(sourceFilePath, newFilePath, (error) => {
             if (error) {
-                console.log("Error renaming file " + path);
-                resolve();
+                console.warn("Error renaming file " + loc);
+                reject();
             } else {
-                fs.unlink(oldFilePath, (err) => {
-                    if (err) {
-                        console.log("Error removing old file " + oldFilePath, err);
-                    }
-                    resolve();
-                })
+                console.log("Changed file " + sourceFilePath + " successfully renamed as " + newFilePath);
+                resolve();
             }
         });
     });
+};
+
+const replaceFile = (oldHash, newHash, loc) => {
+    const sourceFilePath = filePath(loc, STATIC_DIR);
+    const newFilePath = filePath(loc, BUILD_DIR, newHash);
+    const oldFilePath = filePath(loc, BUILD_DIR, oldHash);
+
+    const lastSlash = newFilePath.lastIndexOf('/');
+
+    return new Promise((resolve, reject) => {
+        if (lastSlash > -1) {
+            const newFileDir = newFilePath.substring(0, lastSlash);
+            ensureDirectory(newFileDir).then(() => {
+                copyFile(sourceFilePath, newFilePath).then(resolve);
+            });
+        } else {
+            copyFile.then(() => {
+                fs.unlink(oldFilePath, (err) => {
+                    if (err) {
+                        console.warn("Error removing old file " + oldFilePath, err);
+                        resolve();
+                    }
+                    resolve();
+                })
+            }, () => { /* no-op */});
+        }
+    });
+};
+
+const rewriteLinks = (file) => {
+    return file.replace(STATIC_LINK_REGEX, (match, openQuote, preHashPath, fileExtension, closeQuote) => {
+        let hash = staticFiles['./' + preHashPath + fileExtension];
+        return hash ?
+            `${openQuote}${BUILD_DIR}/${preHashPath}+${hash}${fileExtension}${closeQuote}` :
+            `${openQuote}${BUILD_DIR}/${preHashPath}${fileExtension}${closeQuote}`;
+    }); 
+};
+
+const rewriteAssetLinksForFile = (loc) => {
+    const fileHash = staticFiles[loc];
+    const urlPartsRegex = new RegExp('\.?\/?' + PATH_CHARS_REGEX + FILE_EXTENSION_REGEX);
+    if (fileHash) {
+        loc = loc.replace(urlPartsRegex, '$1+' + fileHash + '$2');
+        loc = path.resolve(BUILD_DIR, loc);
+    }
+    fs.readFile(loc, 'utf8', (err, data) => {
+        if (err) {
+            console.error("Error opening " + loc + " to rewrite links:", err);
+        } else {
+            const fileData = rewriteLinks(data);
+            fs.writeFile(loc, fileData, 'utf8', (err) => {
+                if (err) {
+                    console.error("Error writing modified static links to file " + loc);
+                } else {
+                    console.log("Successfully rewrote links in file " + loc);
+                }
+            });
+        }
+    });
+};
+
+const rewriteConsumerFiles = () => {
+    staticFileConsumers.forEach(rewriteAssetLinksForFile);
 };
 
 Promise.all(
     Object.keys(staticFiles).map(processFile)
 ).then(() => {
     try {
-        const staticFilesJSON = JSON.stringify(staticFiles);
+        const staticFilesJSON = JSON.stringify(
+            Object.assign(staticFileManifest, { assets: staticFiles}),
+            null,
+            4
+        );
         fs.writeFile(MANIFEST_LOCATION, staticFilesJSON, (err) => {
             if (err) {
-                console.log("Error writing to static file manifest");
+                console.error("Error writing to static file manifest");
             } else {
-                console.log("Successfully hashed static files");
+                console.info("Successfully hashed static files");
+                rewriteConsumerFiles();
             }
         });
     }
     catch (err) {
-        console.log("Error writing to file manifest due to un-stringifiable JSON", err);
+        console.error("Error writing to file manifest due to un-stringifiable JSON", err);
     }
 });

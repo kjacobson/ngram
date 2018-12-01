@@ -8,8 +8,9 @@
     "start": "npm run browser",
     "cli": "node cli.js",
     "server": "node static-server.js",
-    "browserify": "browserify browser.js > build/browser.js",
-    "browser": "npm run browserify && npm run server"
+    "browserify": "browserify browser.js > static/browser.js",
+    "browser": "npm run browserify && npm run cache-bust && npm run server",
+    "cache-bust": "node cache-buster.js"
   },
   "author": "",
   "license": "ISC",
@@ -19,7 +20,8 @@
     "emittery": "^0.4.1",
     "es6-promise": "^4.2.4",
     "isomorphic-fetch": "^2.2.1",
-    "md5": "^2.2.1"
+    "md5": "^2.2.1",
+    "mkdirp": "^0.5.1"
   },
   "devDependencies": {
     "esmify": "^1.2.0"

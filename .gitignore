@@ -3,6 +3,7 @@
 .DS_Store
 node_modules
 .elasticbeanstalk/
+build/*
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
