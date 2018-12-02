@@ -2,7 +2,7 @@
     "assets": {
         "./browser.js": "8e1c78c69083a620e67dfe5ab3527da9",
         "./site.webmanifest": "83978adb651693f2bcac2ac2ae49e144",
-        "./sw.js": "6512404e215bd830ad0ddd286b8cc3d8",
+        "./sw.js": "bb6a387f1aafa59ba596b16f5b42f221",
         "./ngrams/3-letters.json": "12208b5eae031284f25f55631055fc10",
         "./ngrams/2-letters.json": "227bd8c42252d2d3449c4bdbba520649",
         "./images/gear.svg": "93a4c5f7347a4a404154ecbe4705a760",

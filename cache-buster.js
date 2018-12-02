@@ -15,6 +15,8 @@ const MD5_REGEX = "(?:\\+[a-f0-9]{32})?";
 const FILE_EXTENSION_REGEX = "(\.(?:js|gif|jpeg|jpg|html|webmanifest|json|png|svg))";
 const STATIC_LINK_REGEX = new RegExp(QUOTE_REGEX + BUILD_DIR_REGEX + PATH_CHARS_REGEX + MD5_REGEX + FILE_EXTENSION_REGEX + QUOTE_REGEX, 'g');
 
+const SW_CACHE_NAME_REGEX = new RegExp("(CACHE_NAME *= *)" + QUOTE_REGEX + "(topwords\-cache)" + QUOTE_REGEX, 'g');
+
 const staticFileManifest = require(MANIFEST_LOCATION);
 const staticFiles = staticFileManifest.assets;
 const staticFileConsumers = staticFileManifest.consumers;
@@ -132,11 +134,14 @@ const replaceFile = (oldHash, newHash, loc) => {
 };
 
 const rewriteLinks = (file) => {
+    file = file.replace(SW_CACHE_NAME_REGEX, (match, declaration, openQuote, prefix, closeQuote) => {
+        let hash = staticFiles['./sw.js'];
+        return hash ? `${declaration}${openQuote}${prefix}+${hash}${closeQuote}` : match;
+    });
     return file.replace(STATIC_LINK_REGEX, (match, openQuote, preHashPath, fileExtension, closeQuote) => {
         let hash = staticFiles['./' + preHashPath + fileExtension];
         return hash ?
-            `${openQuote}${BUILD_DIR}/${preHashPath}+${hash}${fileExtension}${closeQuote}` :
-            `${openQuote}${BUILD_DIR}/${preHashPath}${fileExtension}${closeQuote}`;
+            `${openQuote}${BUILD_DIR}/${preHashPath}+${hash}${fileExtension}${closeQuote}` : match;
     }); 
 };
 
