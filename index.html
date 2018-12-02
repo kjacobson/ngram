@@ -60,6 +60,21 @@
             font-size: 2em;
             font-style: normal;
         }
+        #skipToNext {
+            background: url('./build/images/skip+6353d98cdb2f9008a44165113333ee59.svg') no-repeat center center;
+            background-size: 1.5em 1.5em;
+            display: block;
+            float: right;
+            height: 1.5em;
+            margin: -2em 0 0;
+            text-indent: -9999px;
+            width: 1.5em;
+        }
+        #skipToNext.busy {
+            background: none;
+            font-weight: bold;
+            text-indent: 0;
+        }
 
         .loading-image {
             margin: 0 auto;
@@ -208,8 +223,8 @@
   </head>
   <body>
     <nav>
-        <a href="/" id="homeLink" class="home-link">TopWords.me</a>
-        <a href="#settings" id="settingsLink" class="settings-link">Settings</a>
+        <a href="/" id="homeLink" class="home-link" title="TBH, this just refreshes the page">TopWords.me</a>
+        <a href="#settings" id="settingsLink" class="settings-link" title="Change gameplay settings">Settings</a>
     </nav>
     <h1>Loading &hellip;</h1>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="loading-image">
@@ -220,6 +235,6 @@
             <animate attributeName="r" calcMode="spline" values="0;40" keyTimes="0;1" dur="2" keySplines="0 0.2 0.8 1" begin="0s" repeatCount="indefinite"></animate>
         </circle>
     </svg>
-    <script src="./build/browser+62ae530b0c446ac25d5a515eadc006f3.js"></script>
+    <script src="./build/browser+8e1c78c69083a620e67dfe5ab3527da9.js"></script>
   </body>
 </html>

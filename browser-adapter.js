@@ -86,6 +86,11 @@ class BrowserAdapter {
         this.emitter.emit('cancel-edit-settings');
     }
 
+    handleSkip(e) {
+        e.preventDefault();
+        this.emitter.emit('skip-to-next');
+    }
+
     saveSettings(e) {
         e.preventDefault();
 
@@ -120,6 +125,7 @@ class BrowserAdapter {
     bindEvents() {
         document.getElementById('guessInput').addEventListener('keyup', debounce(this.guessHandler, 50, this));
         document.getElementById('settingsLink').addEventListener('click', this.handleSettingsOpen.bind(this));
+        document.getElementById('skipToNext').addEventListener('click', this.handleSkip.bind(this));
         document.addEventListener('keypress', (e) => {
             if ((e.keyCode === 13 || e.code === "Enter") && e.target.id === 'guessInput') {
                 e.preventDefault();

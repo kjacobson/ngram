@@ -4,7 +4,7 @@ const app = ({numWords, ngramLength, ngram, inputValue, hash, words, remainingTi
     const showMinutes = originalTime / 60 >= 1;
     return (
         nav() +
-        h1(numWords, ngram) +
+        h1(numWords, ngram, lose || win) +
         form(inputValue, remainingTime, showMinutes) +
         scoreBoard(words, hash, win, lose) +
         (win ? winNotification() : '') +
@@ -14,15 +14,21 @@ const app = ({numWords, ngramLength, ngram, inputValue, hash, words, remainingTi
 
 const nav = () => {
     return `<nav>
-        <a href="/" id="homeLink" class="home-link">TopWords.me</a>
-        <a href="#settings" id="settingsLink" class="settings-link">Settings</a>
+        <a href="/" id="homeLink" class="home-link" title="TBH, this just refreshes the page">TopWords.me</a>
+        <a href="#settings" id="settingsLink" class="settings-link" title="Change gameplay settings">Settings</a>
     </nav>`;
 };
 
-const h1 = (numWords, ngram) => {
+const h1 = (numWords, ngram, gameOver) => {
     return `<h1>
-      Top ${numWords} words starting with
-      <var>${ngram}</var>
+        Top ${numWords} words starting with
+        <var>
+            ${ngram}
+        </var>
+        ${gameOver ? 
+            '<a id="skipToNext" class="skip-to-next busy" title="Loading next round">&hellip;</a>' :
+            '<a href="/" id="skipToNext" class="skip-to-next" title="Give up">I give up</a>'
+        }
     </h1>`;
 };
 

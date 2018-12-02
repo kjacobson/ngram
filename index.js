@@ -70,6 +70,7 @@ class NGramGame {
         this.ioAdapter.emitter.on('settings-change', this.changeSettings.bind(this));
         this.ioAdapter.emitter.on('edit-settings', this.launchSettingsEditor.bind(this));
         this.ioAdapter.emitter.on('cancel-edit-settings', this.closeSettingsEditor.bind(this));
+        this.ioAdapter.emitter.on('skip-to-next', this.skipToNext.bind(this));
 
         this.timer = timer;
         // this.timer.emitter.on('zero', this.loseRound.bind(this));
@@ -100,6 +101,12 @@ class NGramGame {
         });
         this.ioAdapter.recordLoss(this.renderData());
         setTimeout(this.newRound.bind(this), 5000);
+        return this;
+    }
+
+    skipToNext() {
+        this.timer.pause();
+        this.loseRound();
         return this;
     }
 
