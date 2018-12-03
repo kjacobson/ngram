@@ -41,7 +41,10 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('install', (e) => {
     e.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            let uncachedFiles = [];
+            let uncachedFiles = [
+                '/',
+                '/index.html'
+            ];
             return Promise.all(
                 CACHED_FILES.map((url) => {
                     return caches.match(url).then((response) => {
