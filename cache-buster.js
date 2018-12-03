@@ -112,6 +112,7 @@ const removeOldFile = (oldFilePath) => {
             if (err) {
                 console.warn("Error removing old file " + oldFilePath, err);
             }
+            console.log("Successfull removed file " + oldFilePath);
             resolve();
         });
     });
@@ -128,7 +129,9 @@ const replaceFile = (oldHash, newHash, loc) => {
         const newFileDir = newFilePath.substring(0, lastSlash);
         ensureDirectory(newFileDir).then(() => {
             copyFile(sourceFilePath, newFilePath).then(() => {
-                removeOldFile(oldFilePath).then(resolve);
+                if (oldHash !== newHash) {
+                    removeOldFile(oldFilePath).then(resolve);
+                }
             }, () => { resolve(); });
         });
     });
