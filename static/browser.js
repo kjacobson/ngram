@@ -251,9 +251,9 @@ const index = require('./index');
 
 index.start(EventEmitter, new BrowserAdapter(EventEmitter));
 
-// navigator.serviceWorker && navigator.serviceWorker.register('./build/sw.js').then(function(registration) {
-//       console.log('Excellent, registered with scope: ', registration.scope);
-// });
+navigator.serviceWorker && navigator.serviceWorker.register('./build/sw.js').then(function(registration) {
+      console.log('Excellent, registered with scope: ', registration.scope);
+});
 
 },{"./browser-adapter":2,"./index":6,"emittery":7}],4:[function(require,module,exports){
 class CountdownTimer {

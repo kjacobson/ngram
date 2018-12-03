@@ -9,7 +9,7 @@ const BUILD_DIR = './build';
 const MANIFEST_LOCATION = './static-file-manifest.json';
 
 const QUOTE_REGEX = "([\"'])";
-const BUILD_DIR_REGEX = "\.\/build\/";
+const BUILD_DIR_REGEX = "(\.?\.?\/?build\/)";
 const PATH_CHARS_REGEX = "([a-zA-Z0-9\-\_\.\/]+)";
 const MD5_REGEX = "(?:\\+[a-f0-9]{32})?";
 const FILE_EXTENSION_REGEX = "(\.(?:js|gif|jpeg|jpg|html|webmanifest|json|png|svg))";
@@ -106,6 +106,17 @@ const copyFile = (sourceFilePath, newFilePath) => {
     });
 };
 
+const removeOldFile = (oldFilePath) => {
+    return new Promise((resolve, reject) => {
+        fs.unlink(oldFilePath, (err) => {
+            if (err) {
+                console.warn("Error removing old file " + oldFilePath, err);
+            }
+            resolve();
+        });
+    });
+};
+
 const replaceFile = (oldHash, newHash, loc) => {
     const sourceFilePath = filePath(loc, STATIC_DIR);
     const newFilePath = filePath(loc, BUILD_DIR, newHash);
@@ -114,22 +125,12 @@ const replaceFile = (oldHash, newHash, loc) => {
     const lastSlash = newFilePath.lastIndexOf('/');
 
     return new Promise((resolve, reject) => {
-        if (lastSlash > -1) {
-            const newFileDir = newFilePath.substring(0, lastSlash);
-            ensureDirectory(newFileDir).then(() => {
-                copyFile(sourceFilePath, newFilePath).then(resolve);
-            });
-        } else {
-            copyFile.then(() => {
-                fs.unlink(oldFilePath, (err) => {
-                    if (err) {
-                        console.warn("Error removing old file " + oldFilePath, err);
-                        resolve();
-                    }
-                    resolve();
-                })
-            }, () => { /* no-op */});
-        }
+        const newFileDir = newFilePath.substring(0, lastSlash);
+        ensureDirectory(newFileDir).then(() => {
+            copyFile(sourceFilePath, newFilePath).then(() => {
+                removeOldFile(oldFilePath).then(resolve);
+            }, () => { resolve(); });
+        });
     });
 };
 
@@ -138,10 +139,10 @@ const rewriteLinks = (file) => {
         let hash = staticFiles['./sw.js'];
         return hash ? `${declaration}${openQuote}${prefix}+${hash}${closeQuote}` : match;
     });
-    return file.replace(STATIC_LINK_REGEX, (match, openQuote, preHashPath, fileExtension, closeQuote) => {
+    return file.replace(STATIC_LINK_REGEX, (match, openQuote, buildDir, preHashPath, fileExtension, closeQuote) => {
         let hash = staticFiles['./' + preHashPath + fileExtension];
         return hash ?
-            `${openQuote}${BUILD_DIR}/${preHashPath}+${hash}${fileExtension}${closeQuote}` : match;
+            `${openQuote}${buildDir}${preHashPath}+${hash}${fileExtension}${closeQuote}` : match;
     }); 
 };
 
