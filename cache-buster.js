@@ -79,12 +79,8 @@ const processFile = (loc) => {
                 replaceFile(oldHash, hash, loc).then(resolve);
             } else {
                 const oldFilePath = filePath(loc, BUILD_DIR, oldHash);
-                if (fs.existsSync(oldFilePath)) {
-                    console.info("Nothing changed in file " + loc);
-                    resolve();
-                } else {
-                    replaceFile(oldHash, hash, loc).then(resolve);
-                }
+                console.info("Nothing changed in file " + loc);
+                replaceFile(oldHash, hash, loc).then(resolve);
             }
         }, (error) => {
             console.error("Error hashing file " + loc);
@@ -100,7 +96,7 @@ const copyFile = (sourceFilePath, newFilePath) => {
                 console.warn("Error renaming file " + loc);
                 reject();
             } else {
-                console.log("Changed file " + sourceFilePath + " successfully renamed as " + newFilePath);
+                console.log("File " + sourceFilePath + " successfully copied to " + newFilePath);
                 resolve();
             }
         });
