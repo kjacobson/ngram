@@ -1,6 +1,6 @@
 {
     "assets": {
-        "./browser.js": "a99f34108430854f0924e3d634402f64",
+        "./browser.js": "7ecb0e01e29ff4d8cda122b6411ab235",
         "./site.webmanifest": "0d62c9e8838ecea5de3e4b56a4809253",
         "./sw.js": "952eef596679a2c3a5360eaf562ac27c",
         "./ngrams/3-letters.json": "12208b5eae031284f25f55631055fc10",
