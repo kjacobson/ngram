@@ -3,6 +3,7 @@ const path = require('path');
 const readline = require('readline');
 const md5 = require('md5');
 const mkdirp = require('mkdirp');
+const rimraf = require('rimraf');
 
 const STATIC_DIR = './static';
 const BUILD_DIR = './build';
@@ -106,18 +107,6 @@ const copyFile = (sourceFilePath, newFilePath) => {
     });
 };
 
-const removeOldFile = (oldFilePath) => {
-    return new Promise((resolve, reject) => {
-        fs.unlink(oldFilePath, (err) => {
-            if (err) {
-                console.warn("Error removing old file " + oldFilePath, err);
-            }
-            console.log("Successfull removed file " + oldFilePath);
-            resolve();
-        });
-    });
-};
-
 const replaceFile = (oldHash, newHash, loc) => {
     const sourceFilePath = filePath(loc, STATIC_DIR);
     const newFilePath = filePath(loc, BUILD_DIR, newHash);
@@ -128,11 +117,7 @@ const replaceFile = (oldHash, newHash, loc) => {
     return new Promise((resolve, reject) => {
         const newFileDir = newFilePath.substring(0, lastSlash);
         ensureDirectory(newFileDir).then(() => {
-            copyFile(sourceFilePath, newFilePath).then(() => {
-                if (oldHash !== newHash) {
-                    removeOldFile(oldFilePath).then(resolve);
-                }
-            }, () => { resolve(); });
+            copyFile(sourceFilePath, newFilePath).then(resolve);
         });
     });
 };
@@ -176,25 +161,31 @@ const rewriteConsumerFiles = () => {
     staticFileConsumers.forEach(rewriteAssetLinksForFile);
 };
 
-Promise.all(
-    Object.keys(staticFiles).map(processFile)
-).then(() => {
-    try {
-        const staticFilesJSON = JSON.stringify(
-            Object.assign(staticFileManifest, { assets: staticFiles}),
-            null,
-            4
-        );
-        fs.writeFile(MANIFEST_LOCATION, staticFilesJSON, (err) => {
-            if (err) {
-                console.error("Error writing to static file manifest");
-            } else {
-                console.info("Successfully hashed static files");
-                rewriteConsumerFiles();
+rimraf('./build/*', (err) => {
+    if (err) {
+        console.log("Could not clear build directory");
+    } else {
+        Promise.all(
+            Object.keys(staticFiles).map(processFile)
+        ).then(() => {
+            try {
+                const staticFilesJSON = JSON.stringify(
+                    Object.assign(staticFileManifest, { assets: staticFiles}),
+                    null,
+                    4
+                );
+                fs.writeFile(MANIFEST_LOCATION, staticFilesJSON, (err) => {
+                    if (err) {
+                        console.error("Error writing to static file manifest");
+                    } else {
+                        console.info("Successfully hashed static files");
+                        rewriteConsumerFiles();
+                    }
+                });
+            }
+            catch (err) {
+                console.error("Error writing to file manifest due to un-stringifiable JSON", err);
             }
         });
-    }
-    catch (err) {
-        console.error("Error writing to file manifest due to un-stringifiable JSON", err);
     }
 });
