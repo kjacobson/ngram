@@ -12,7 +12,10 @@ staticServer.use(express.static(__dirname, {
     extensions: ['html', 'htm'],
     maxAge: '1y',
     setHeaders: (res, path, stat) => {
-        res.set('x-timestamp', Date.now())
+        if (path.match(/sw\+[a-z0-9]{32}/)) {
+            res.set('Service-Worker-Allowed', '/');
+        }
+        res.set('x-timestamp', Date.now());
     }
 }));
 const serverInstance = staticServer.listen(port, () => {
