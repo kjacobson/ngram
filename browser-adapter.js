@@ -1,3 +1,8 @@
+if (typeof Symbol !== 'function') {
+    const Symbol = (input) => {
+        return input;
+    };
+}
 const { appTemplate, timerTemplate } = require('./templates');
 
 // This verbose syntax is so the cache-busting script notices these URLs
@@ -30,109 +35,47 @@ const moveCursorToEnd = (el) => {
 	}
 }
 
+
+/* PRIVATE INSTANCE METHOD SETUP */
+const 
+    guess = Symbol('guess'),
+    handleSettingsOpen = Symbol('handleSettingsOpen'),
+    handleSettingsCancel = Symbol('handleSettingsCancel'),
+    handleSkip = Symbol('handleSkip'),
+    guessHandler = Symbol('guessHandler'),
+    saveSettings = Symbol('saveSettings'),
+    renderApp = Symbol('renderApp'),
+    updateTimer = Symbol('updateTimer'),
+    bindEvents = Symbol('bindEvents');
+
 class BrowserAdapter {
     constructor(EventEmitter) {
         this.emitter = new EventEmitter();
     }
 
-    guess(input) {
-        this.emitter.emit('guess', input);
-    }
+    /* *
+     *
+     * PUBLIC INTERFACE 
+     *
+     * */
 
-    beginNewRound(renderData) {
-        this.renderApp(renderData);
-    }
-
-    recordWin(renderData) {
-        this.renderApp(renderData);
-    }
-
-    recordLoss(renderData) {
-        this.renderApp(renderData);
-    }
-
-    recordCorrectGuess(renderData) {
-        this.renderApp(renderData);
-    }
-
-    launchSettingsEditor(renderData) {
-        this.renderApp(renderData);
-        document.getElementById('settingsForm').addEventListener('submit', this.saveSettings.bind(this));
-        document.getElementById('cancelEditSettings').addEventListener('click', this.handleSettingsCancel.bind(this));
-    }
-
-    closeSettingsEditor(renderData) {
-        document.getElementById('settingsForm').removeEventListener('submit', this.saveSettings.bind(this));
-        document.getElementById('cancelEditSettings').removeEventListener('click', this.handleSettingsCancel.bind(this));
-        this.renderApp(renderData);
-    }
-
-    showTimeRemaining({remainingTime, originalTime}) {
-        this.updateTimer(remainingTime, (originalTime / 60 >= 1));
-    }
-
-    updateTimer(remainingTime, showMinutes) {
-        document.getElementById('timerContainer').innerHTML =
-            timerTemplate(remainingTime, showMinutes);
-    }
-
-    handleSettingsOpen(e) {
-        e.preventDefault();
-        this.emitter.emit('edit-settings');
-    }
-
-    handleSettingsCancel(e) {
-        e.preventDefault();
-        this.emitter.emit('cancel-edit-settings');
-    }
-
-    handleSkip(e) {
-        e.preventDefault();
-        this.emitter.emit('skip-to-next');
-    }
-
-    saveSettings(e) {
-        e.preventDefault();
-
-        const form = e.target;
-        const nGramLength = parseInt(
-            document.getElementById('numberOfLettersSelector').value
-        );
-        const numWords = parseInt(
-            document.getElementById('numberOfWordsSelector').value
-        );
-        const time = parseInt(
-            document.getElementById('timeLimitSelector').value
-        );
-        this.emitter.emit('settings-change', {
-            nGramLength,
-            numWords,
-            time
+    /* SETUP*/
+    loadNGramData(ngramLength) {
+        return new Promise((resolve, reject) => {
+            fetch(NGRAM_FILES[ngramLength]).then((response) => {
+                if (response.status >= 400) {
+                    // no-op
+                    console.log("request failed");
+                    reject();
+                }
+                return response.json();
+            }).then(data => {
+                resolve(data);
+            });
         });
     }
 
-    renderApp(renderData) {
-        document.body.innerHTML = appTemplate(renderData);
-        this.bindEvents();
-        moveCursorToEnd(document.getElementById('guessInput'));
-    }
-
-    guessHandler(e) {
-        const input = e.target.value.trim().toLowerCase();
-        this.guess(input);
-    };
-
-    bindEvents() {
-        document.getElementById('guessInput').addEventListener('keyup', debounce(this.guessHandler, 50, this));
-        document.getElementById('settingsLink').addEventListener('click', this.handleSettingsOpen.bind(this));
-        document.getElementById('skipToNext').addEventListener('click', this.handleSkip.bind(this));
-        document.addEventListener('keypress', (e) => {
-            if ((e.keyCode === 13 || e.code === "Enter") && e.target.id === 'guessInput') {
-                e.preventDefault();
-            }
-        });
-    }
-
+    /* LOCAL STORAGE CACHE */
     retrieveSeenCache() {
         let seenNGrams = localStorage.getItem(SEEN_STORAGE_KEY);
         if (seenNGrams) {
@@ -159,18 +102,113 @@ class BrowserAdapter {
         }
     }
 
-    loadNGramData(ngramLength) {
-        return new Promise((resolve, reject) => {
-            fetch(NGRAM_FILES[ngramLength]).then((response) => {
-                if (response.status >= 400) {
-                    // no-op
-                    console.log("request failed");
-                    reject();
-                }
-                return response.json();
-            }).then(data => {
-                resolve(data);
-            });
+    /* RENDERING */
+
+    beginNewRound(renderData) {
+        this[renderApp](renderData);
+    }
+
+    recordWin(renderData) {
+        this[renderApp](renderData);
+    }
+
+    recordLoss(renderData) {
+        this[renderApp](renderData);
+    }
+
+    recordCorrectGuess(renderData) {
+        this[renderApp](renderData);
+    }
+
+    showTimeRemaining({remainingTime, originalTime}) {
+        this[updateTimer](remainingTime, (originalTime / 60 >= 1));
+    }
+
+    launchSettingsEditor(renderData) {
+        this[renderApp](renderData);
+        document.getElementById('settingsForm').addEventListener('submit', this[saveSettings].bind(this));
+        document.getElementById('cancelEditSettings').addEventListener('click', this[handleSettingsCancel].bind(this));
+    }
+
+    closeSettingsEditor(renderData) {
+        document.getElementById('settingsForm').removeEventListener('submit', this[saveSettings].bind(this));
+        document.getElementById('cancelEditSettings').removeEventListener('click', this[handleSettingsCancel].bind(this));
+        this[renderApp](renderData);
+    }
+
+
+    /* *
+     *
+     * PRIVATE METHODS
+     *
+     * */
+
+    [guess](input) {
+        this.emitter.emit('guess', input);
+    }
+
+
+    /* EVENT HANDLING */
+    [handleSettingsOpen](e) {
+        e.preventDefault();
+        this.emitter.emit('edit-settings');
+    }
+
+    [handleSettingsCancel](e) {
+        e.preventDefault();
+        this.emitter.emit('cancel-edit-settings');
+    }
+
+    [handleSkip](e) {
+        e.preventDefault();
+        this.emitter.emit('skip-to-next');
+    }
+
+    [guessHandler](e) {
+        const input = e.target.value.trim().toLowerCase();
+        this[guess](input);
+    };
+
+    [saveSettings](e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const nGramLength = parseInt(
+            document.getElementById('numberOfLettersSelector').value
+        );
+        const numWords = parseInt(
+            document.getElementById('numberOfWordsSelector').value
+        );
+        const time = parseInt(
+            document.getElementById('timeLimitSelector').value
+        );
+        this.emitter.emit('settings-change', {
+            nGramLength,
+            numWords,
+            time
+        });
+    }
+
+    /* RENDERING */
+    [renderApp](renderData) {
+        document.body.innerHTML = appTemplate(renderData);
+        this[bindEvents]();
+        moveCursorToEnd(document.getElementById('guessInput'));
+    }
+
+    [updateTimer](remainingTime, showMinutes) {
+        document.getElementById('timerContainer').innerHTML =
+            timerTemplate(remainingTime, showMinutes);
+    }
+
+    [bindEvents]() {
+        document.getElementById('guessInput').addEventListener('keyup', debounce(this[guessHandler], 50, this));
+        document.getElementById('settingsLink').addEventListener('click', this[handleSettingsOpen].bind(this));
+        document.getElementById('skipToNext').addEventListener('click', this[handleSkip].bind(this));
+        document.addEventListener('keypress', (e) => {
+            if ((e.keyCode === 13 || e.code === "Enter") && e.target.id === 'guessInput') {
+                e.preventDefault();
+            }
         });
     }
 }

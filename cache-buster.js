@@ -30,7 +30,7 @@ const ensureDirectory = (loc) => {
                         console.error("Directory " + loc + " does not exist and could not be created");
                         reject(err);
                     } else {
-                        console.info("Created director " + loc + ", which did not previously exist");
+                        console.info("Created directory " + loc + ", which did not previously exist");
                         resolve();
                     }
                 });
