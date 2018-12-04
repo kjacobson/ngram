@@ -1,0 +1,7 @@
+{
+  "lambda": {
+    "role": "topwords-lambda-executor",
+    "name": "topwords-lambda",
+    "region": "us-west-2"
+  }
+}

@@ -1,7 +1,6 @@
 {
   "name": "lexiguess",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,11 +9,13 @@
     "server": "node static-server.js",
     "browserify": "browserify browser.js > static/browser.js",
     "browser": "npm run browserify && npm run cache-bust && npm run server",
-    "cache-bust": "node cache-buster.js"
+    "cache-bust": "node cache-buster.js",
+    "post-install": "npm run browserify && npm run cache-bust"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "aws-serverless-express": "^3.3.5",
     "browserify": "^16.2.3",
     "command-line-args": "^5.0.2",
     "compression": "^1.7.3",
@@ -28,5 +29,15 @@
   },
   "devDependencies": {
     "esmify": "^1.2.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kjacobson/ngram.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/kjacobson/ngram/issues"
+  },
+  "homepage": "https://github.com/kjacobson/ngram#readme",
+  "description": ""
 }
