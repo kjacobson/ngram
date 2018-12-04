@@ -1,5 +1,5 @@
 {
-  "name": "lexiguess",
+  "name": "topwords",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,8 @@
     "browserify": "browserify browser.js > static/browser.js",
     "browser": "npm run browserify && npm run cache-bust && npm run server",
     "cache-bust": "node cache-buster.js",
-    "post-install": "npm run browserify && npm run cache-bust"
+    "post-install": "npm run browserify && npm run cache-bust",
+    "deploy": "claudia update"
   },
   "author": "",
   "license": "ISC",
@@ -30,6 +31,19 @@
   "devDependencies": {
     "esmify": "^1.2.0"
   },
+  "files": [
+    "build/",
+    "index.html",
+    "static-file-manifest.json",
+    "static-server.js",
+    "favicon.ico",
+    "cache-buster.js",
+    "package.json",
+    "package-lock.json",
+    "browserconfig.xml",
+    "lambda.js",
+    "claudia.json"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kjacobson/ngram.git"

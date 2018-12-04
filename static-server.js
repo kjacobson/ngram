@@ -21,3 +21,5 @@ staticServer.use(express.static(__dirname, {
 const serverInstance = staticServer.listen(port, () => {
     console.info(`App listening at ${serverInstance.address().address}:${serverInstance.address().port}`);
 });
+
+module.exports = staticServer;
