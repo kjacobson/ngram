@@ -5,12 +5,19 @@ const md5 = require('md5');
 const mkdirp = require('mkdirp');
 const rimraf = require('rimraf');
 
+const ABSOLUTE_LINK_LOCATIONS = {
+    development : '//localhost:3333/',
+    // production : '//d33y0deax6wu45.cloudfront.net/'
+    production: './'
+};
+const absoluteLinkBucket = ABSOLUTE_LINK_LOCATIONS[process.env.NODE_ENV || 'development'];
+
 const STATIC_DIR = './static';
-const BUILD_DIR = './build';
+const BUILD_DIR = './public';
 const MANIFEST_LOCATION = './static-file-manifest.json';
 
 const QUOTE_REGEX = "([\"'])";
-const BUILD_DIR_REGEX = "(\.?\.?\/?build\/)";
+const BUILD_DIR_REGEX = "(?:\.?\.?\/?public\/)";
 const PATH_CHARS_REGEX = "([a-zA-Z0-9\-\_\.\/]+)";
 const MD5_REGEX = "(?:\\+[a-f0-9]{32})?";
 const FILE_EXTENSION_REGEX = "(\.(?:js|gif|jpeg|jpg|html|webmanifest|json|png|svg))";
@@ -50,7 +57,7 @@ const filePath = (filePath, dirPath, hash) => {
             filePath.substring(0, lastDot), 
             filePath.substring(lastDot)
         ] : [filePath, ''];
-        filePath = loc + '+' + hash + extension;
+        filePath = loc + '!' + hash + extension;
     }
     return path.resolve(dirPath, filePath);
 };
@@ -123,10 +130,10 @@ const rewriteLinks = (file) => {
         let hash = staticFiles['./sw.js'];
         return hash ? `${declaration}${openQuote}${prefix}+${hash}${closeQuote}` : match;
     });
-    return file.replace(STATIC_LINK_REGEX, (match, openQuote, buildDir, preHashPath, fileExtension, closeQuote) => {
+    return file.replace(STATIC_LINK_REGEX, (match, openQuote, preHashPath, fileExtension, closeQuote) => {
         let hash = staticFiles['./' + preHashPath + fileExtension];
         return hash ?
-            `${openQuote}${buildDir}${preHashPath}+${hash}${fileExtension}${closeQuote}` : match;
+            `${openQuote}${absoluteLinkBucket}${preHashPath}!${hash}${fileExtension}${closeQuote}` : match;
     }); 
 };
 
@@ -134,7 +141,7 @@ const rewriteAssetLinksForFile = (loc) => {
     const fileHash = staticFiles[loc];
     const urlPartsRegex = new RegExp('\.?\/?' + PATH_CHARS_REGEX + FILE_EXTENSION_REGEX);
     if (fileHash) {
-        loc = loc.replace(urlPartsRegex, '$1+' + fileHash + '$2');
+        loc = loc.replace(urlPartsRegex, '$1!' + fileHash + '$2');
         loc = path.resolve(BUILD_DIR, loc);
     }
     fs.readFile(loc, 'utf8', (err, data) => {
@@ -142,6 +149,9 @@ const rewriteAssetLinksForFile = (loc) => {
             console.error("Error opening " + loc + " to rewrite links:", err);
         } else {
             const fileData = rewriteLinks(data);
+            if (loc === './index.html') {
+                loc = './public/index.html';
+            }
             fs.writeFile(loc, fileData, 'utf8', (err) => {
                 if (err) {
                     console.error("Error writing modified static links to file " + loc);
@@ -157,7 +167,7 @@ const rewriteConsumerFiles = () => {
     staticFileConsumers.forEach(rewriteAssetLinksForFile);
 };
 
-rimraf('./build/*', (err) => {
+rimraf('./public/*', (err) => {
     if (err) {
         console.log("Could not clear build directory");
     } else {

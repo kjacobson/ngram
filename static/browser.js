@@ -74,8 +74,8 @@ const { appTemplate, timerTemplate } = require('./templates');
 
 // This verbose syntax is so the cache-busting script notices these URLs
 const NGRAM_FILES = {
-    2 : './build/ngrams/2-letters.json',
-    3 : './build/ngrams/3-letters.json'
+    2 : './public/ngrams/2-letters.json',
+    3 : './public/ngrams/3-letters.json'
 };
 
 const SEEN_STORAGE_KEY = 'seenNGrams';
@@ -289,7 +289,8 @@ const index = require('./index');
 
 index.start(EventEmitter, new BrowserAdapter(EventEmitter));
 
-navigator.serviceWorker && navigator.serviceWorker.register('./build/sw.js', { scope : '/' }).then(function(registration) {
+/* -------------------- */
+navigator.serviceWorker && navigator.serviceWorker.register('./public/sw.js', { scope : '/' }).then(function(registration) {
       console.log('Excellent, registered with scope: ', registration.scope);
 });
 
@@ -860,4 +861,5 @@ const settingsEditor = (ngramLength, numWords, originalTime) => {
 
 module.exports = { appTemplate : app, timerTemplate : timer };
 
-},{"./formatted-time":5}]},{},[3]);
+},{"./formatted-time":5}]},{},[3])
+//# sourceMappingURL=browser.js.map

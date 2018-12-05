@@ -1,25 +1,26 @@
 const CACHE_NAME = 'topwords-cache';
 const CACHED_FILES = [
-    '../build/site.webmanifest',
-    '../build/browser.js',
-    '../build/sw.js',
-    '../build/ngrams/3-letters.json',
-    '../build/ngrams/2-letters.json',
-    '../build/images/gear.svg',
-    '../build/images/android-chrome-192x192.png',
-    '../build/images/favicon-32x32.png',
-    '../build/images/mstile-310x150.png',
-    '../build/images/spinning-top.svg',
-    '../build/images/android-chrome-512x512.png',
-    '../build/images/mstile-310x310.png',
-    '../build/images/apple-touch-icon.png',
-    '../build/images/mstile-144x144.png',
-    '../build/images/mstile-70x70.png',
-    '../build/images/favicon-16x16.png',
-    '../build/images/mstile-150x150.png',
-    '../build/images/safari-pinned-tab.svg',
-    '../build/images/skip.svg'
+    './public/site.webmanifest',
+    './public/browser.js',
+    './public/sw.js',
+    './public/ngrams/3-letters.json',
+    './public/ngrams/2-letters.json',
+    './public/images/gear.svg',
+    './public/images/android-chrome-192x192.png',
+    './public/images/favicon-32x32.png',
+    './public/images/mstile-310x150.png',
+    './public/images/spinning-top.svg',
+    './public/images/android-chrome-512x512.png',
+    './public/images/mstile-310x310.png',
+    './public/images/apple-touch-icon.png',
+    './public/images/mstile-144x144.png',
+    './public/images/mstile-70x70.png',
+    './public/images/favicon-16x16.png',
+    './public/images/mstile-150x150.png',
+    './public/images/safari-pinned-tab.svg',
+    './public/images/skip.svg'
 ];
+/* -------------------- */
 
 self.addEventListener('fetch', (event) => {
     // if (event.request.url === '') {

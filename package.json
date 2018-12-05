@@ -4,32 +4,34 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm run browser",
+    "start": "npm run build && npx sandbox",
     "cli": "node cli.js",
     "server": "node static-server.js",
-    "browserify": "browserify browser.js > static/browser.js",
-    "browser": "npm run browserify && npm run cache-bust && npm run server",
+    "browserify": "browserify browser.js --debug | exorcist static/browser.js.map > static/browser.js",
+    "browser": "npm run build && npm run server",
     "cache-bust": "node cache-buster.js",
-    "post-install": "npm run browserify && npm run cache-bust",
-    "deploy": "claudia update"
+    "build": "npm run browserify && npm run cache-bust && cp static/browser.js.map public/browser.js.map",
+    "s3copy": "aws s3 cp public/ s3://topwords.me --recursive",
+    "s3copy-www": "aws s3 cp public/ s3://www.topwords.me --recursive",
+    "invalidate": "aws cloudfront create-invalidation --distribution-id EEHXI5BEL7YUZ --paths /index.html",
+    "local": "NODE_ENV=development npm run build && npm run server",
+    "deploy": "NODE_ENV=production npm run build && npm run s3copy && npm run invalidate"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-serverless-express": "^3.3.5",
     "browserify": "^16.2.3",
     "command-line-args": "^5.0.2",
     "compression": "^1.7.3",
     "emittery": "^0.4.1",
     "es6-promise": "^4.2.4",
+    "exorcist": "^1.0.1",
     "express": "^4.16.4",
     "isomorphic-fetch": "^2.2.1",
+    "load-scripts": "^1.0.0",
     "md5": "^2.2.1",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.2"
-  },
-  "devDependencies": {
-    "esmify": "^1.2.0"
   },
   "files": [
     "build/",

@@ -7,8 +7,8 @@ const { appTemplate, timerTemplate } = require('./templates');
 
 // This verbose syntax is so the cache-busting script notices these URLs
 const NGRAM_FILES = {
-    2 : './build/ngrams/2-letters.json',
-    3 : './build/ngrams/3-letters.json'
+    2 : './public/ngrams/2-letters.json',
+    3 : './public/ngrams/3-letters.json'
 };
 
 const SEEN_STORAGE_KEY = 'seenNGrams';
