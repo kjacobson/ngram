@@ -1,16 +1,25 @@
 const fs = require('fs');
 const Promise = require('es6-promise');
 const fetch = require('isomorphic-fetch');
+const commandLineArgs = require('command-line-args');
+
+const args = [
+  { name: 'min-words', alias: 'w', type: Number, defaultValue: 5 },
+  { name: 'letters', alias: 'l', type: Number, defaultValue: 3 },
+  { name: 'query-limit', alias: 'q', type: Number, defaultValue: 15 },
+  { name: 'min-freq', alias: 'f', type: Number, defaultValue: 0.4 }
+];
+const config = commandLineArgs(args);
 
 const ALPHABET = [
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
     'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
 ];
-const numLetters = 3;
-const wordLimit = 5;
-const queryLimit = 15;
+const numLetters = config.letters;
+const minQualifyingWords = config['min-words'];
+const queryLimit = config['query-limit'];
+const frequencyThreshold = config['min-freq'];
 const scoreThreshold = 900;
-const frequencyThreshold = 0.4;
 const results = [];
 const knownNGrams = {};
 
@@ -36,6 +45,10 @@ const isNotProperNoun = (word) => {
 const isOneWord = (word) => {
     return word.word.indexOf(' ') === -1;
 };
+// A weak proxy for eliminating abbreviations
+const containsVowels = (word) => {
+    return word.word.match(/[aeiouy]/);
+};
 
 const addKnownNGram = (ngram, response) => {
     const words = response.map((entry) => {
@@ -46,7 +59,7 @@ const addKnownNGram = (ngram, response) => {
 };
 
 const train = (resultsArr, i = 0) => {
-    fetchTopWords(resultsArr[i], wordLimit).then(() => {
+    fetchTopWords(resultsArr[i], minQualifyingWords).then(() => {
         if (i + 1 < resultsArr.length) {
             train(resultsArr, i+1)
         } else {
@@ -60,7 +73,7 @@ const train = (resultsArr, i = 0) => {
     });
 };
 
-const fetchTopWords = (ngram, wordLimit) => {
+const fetchTopWords = (ngram, minQualifyingWords) => {
     // console.log('Fetching top words for ngram "' + ngram);
     return new Promise((res, rej) => {
         fetch(`https://api.datamuse.com/words?sp=${ngram}*&max=${queryLimit}&md=fp`).then(response => {
@@ -71,10 +84,10 @@ const fetchTopWords = (ngram, wordLimit) => {
             }
             return response.json();
         }).then(words => {
-            words = words.filter(isNotProperNoun).filter(isOneWord);
+            words = words.filter(isNotProperNoun).filter(isOneWord).filter(containsVowels);
             words = sortByFrequency(words);
             
-            if (words.length >= wordLimit && words[wordLimit-1].frequency > frequencyThreshold) {
+            if (words.length >= minQualifyingWords && words[minQualifyingWords-1].frequency > frequencyThreshold) {
                 addKnownNGram(ngram, words);
             } else {
                 // console.log("Too few matches for ngram '" + ngram);
