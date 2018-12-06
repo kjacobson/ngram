@@ -5,13 +5,6 @@ const md5 = require('md5');
 const mkdirp = require('mkdirp');
 const rimraf = require('rimraf');
 
-const ABSOLUTE_LINK_LOCATIONS = {
-    development : '//localhost:3333/',
-    // production : '//d33y0deax6wu45.cloudfront.net/'
-    production: './'
-};
-const absoluteLinkBucket = ABSOLUTE_LINK_LOCATIONS[process.env.NODE_ENV || 'development'];
-
 const STATIC_DIR = './static';
 const BUILD_DIR = './public';
 const MANIFEST_LOCATION = './static-file-manifest.json';
@@ -133,7 +126,7 @@ const rewriteLinks = (file) => {
     return file.replace(STATIC_LINK_REGEX, (match, openQuote, preHashPath, fileExtension, closeQuote) => {
         let hash = staticFiles['./' + preHashPath + fileExtension];
         return hash ?
-            `${openQuote}${absoluteLinkBucket}${preHashPath}!${hash}${fileExtension}${closeQuote}` : match;
+            `${openQuote}./${preHashPath}!${hash}${fileExtension}${closeQuote}` : match;
     }); 
 };
 
