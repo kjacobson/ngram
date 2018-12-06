@@ -8,28 +8,41 @@ const ALPHABET = [
 ];
 const numLetters = 3;
 const wordLimit = 5;
-const queryLimit = 10;
+const queryLimit = 15;
 const scoreThreshold = 900;
 const frequencyThreshold = 0.4;
 const results = [];
 const knownNGrams = {};
 
-const sortByFrequency = (response) => {
-    return response.map((word) => {
-        const wordFrequency = word.tags[0].substring(2);
+const sortByFrequency = (words) => {
+    return words.map((word) => {
+        const wordFrequency = word.tags[word.tags.length-1].substring(2);
         word.frequency = parseFloat(wordFrequency, 10);
         return word;  
     }).sort((a, b) => {
-        return b.frequency > a.frequency;
+        if (a.frequency > b.frequency) {
+            return -1;
+        } else
+        if (a.frequency < b.frequency) {
+            return 1;
+        } else {
+            return 0;
+        }
     });
+};
+const isNotProperNoun = (word) => {
+    return word.tags.indexOf('prop') === -1;
+};
+const isOneWord = (word) => {
+    return word.word.indexOf(' ') === -1;
 };
 
 const addKnownNGram = (ngram, response) => {
     const words = response.map((entry) => {
         return entry.word;
     });
-    console.log(`Top ${wordLimit} words for ngram ${ngram}: ${words.slice(0, 5).join(", ")}`);
-    knownNGrams[ngram] = words.slice(0, 5);
+    console.log(`Top words for ngram ${ngram}: ${words.join(", ")}`);
+    knownNGrams[ngram] = words;
 };
 
 const train = (resultsArr, i = 0) => {
@@ -39,7 +52,7 @@ const train = (resultsArr, i = 0) => {
         } else {
             try {
                 const asJSON = JSON.stringify(knownNGrams);
-                fs.writeFileSync('./ngrams/' + numLetters + '-letters.json', asJSON);
+                fs.writeFileSync('./static/ngrams/' + numLetters + '-letters.json', asJSON);
             } catch (e) {
                 console.error(e);
             }
@@ -50,7 +63,7 @@ const train = (resultsArr, i = 0) => {
 const fetchTopWords = (ngram, wordLimit) => {
     // console.log('Fetching top words for ngram "' + ngram);
     return new Promise((res, rej) => {
-        fetch(`https://api.datamuse.com/words?sp=${ngram}*&max=${queryLimit}&md=f`).then(response => {
+        fetch(`https://api.datamuse.com/words?sp=${ngram}*&max=${queryLimit}&md=fp`).then(response => {
             if (response.status >= 400) {
                 // no-op
                 console.log("request failed");
@@ -58,6 +71,7 @@ const fetchTopWords = (ngram, wordLimit) => {
             }
             return response.json();
         }).then(words => {
+            words = words.filter(isNotProperNoun).filter(isOneWord);
             words = sortByFrequency(words);
             
             if (words.length >= wordLimit && words[wordLimit-1].frequency > frequencyThreshold) {
