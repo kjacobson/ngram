@@ -1,9 +1,9 @@
 {
     "assets": {
         "./browser.js": "1e11822dcc68399c5239e77217bc79fd",
-        "./site.webmanifest": "0d62c9e8838ecea5de3e4b56a4809253",
+        "./site.webmanifest": "699b7d19b9a6dce7a59a464511b39822",
         "./sw.js": "a468a523b6ad56ac97788c92d4d497db",
-        "./ngrams/3-letters.json": "12208b5eae031284f25f55631055fc10",
+        "./ngrams/3-letters.json": "4fff6ccd739525554389bc04c2805b5b",
         "./ngrams/2-letters.json": "227bd8c42252d2d3449c4bdbba520649",
         "./images/gear.svg": "93a4c5f7347a4a404154ecbe4705a760",
         "./images/android-chrome-192x192.png": "366a0964657ef4cbdeeabb3b8e6487da",
