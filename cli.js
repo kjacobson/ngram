@@ -1,5 +1,5 @@
 const EventEmitter = require('events');
-const commandLineArgs = require('command-line-args')
+const commandLineArgs = require('command-line-args');
 
 const CliAdapter = require('./cli-adapter');
 const index = require('./index');
