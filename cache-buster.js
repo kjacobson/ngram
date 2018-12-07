@@ -17,6 +17,7 @@ const FILE_EXTENSION_REGEX = "((?:\.(?:js|gif|jpeg|jpg|html|webmanifest|json|png
 const STATIC_LINK_REGEX = new RegExp(QUOTE_REGEX + BUILD_DIR_REGEX + PATH_CHARS_REGEX + MD5_REGEX + FILE_EXTENSION_REGEX + QUOTE_REGEX, 'g');
 
 const SW_CACHE_NAME_REGEX = new RegExp("(CACHE_NAME *= *)" + QUOTE_REGEX + "(topwords\-cache)" + QUOTE_REGEX, 'g');
+const SOURCE_MAP_REGEX = new RegExp("(browser)(\.js\.map)");
 
 const staticFileManifest = require(MANIFEST_LOCATION);
 const staticFiles = staticFileManifest.assets;
@@ -119,6 +120,10 @@ const replaceFile = (oldHash, newHash, loc) => {
 };
 
 const rewriteLinks = (file) => {
+    file = file.replace(SOURCE_MAP_REGEX, (match, fileName, extension) => {
+        let hash = staticFiles['./' + match];
+        return hash ? `${fileName}!${hash}${extension}` : match;
+    });
     file = file.replace(SW_CACHE_NAME_REGEX, (match, declaration, openQuote, prefix, closeQuote) => {
         let hash = staticFiles['./sw.js'];
         return hash ? `${declaration}${openQuote}${prefix}+${hash}${closeQuote}` : match;

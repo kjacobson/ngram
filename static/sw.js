@@ -32,8 +32,12 @@ const fromNetwork = (request, timeout) => {
         fetch(request).then((response) => {
             console.log("Retrieved " + request.url + " from network");
             clearTimeout(timeoutId);
-            cache.put(url, response);
-            resolve(response);
+            caches.open(CACHE_NAME).then((cache) => {
+                cache.put(request.url, response.clone()).then(() => {
+                    console.log("Cached resource " + request.url);
+                    resolve(response);
+                }, resolve);
+            });
         }, (error) => {
             console.log(error);
             reject();
