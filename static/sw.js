@@ -32,15 +32,19 @@ const fromNetwork = (request, timeout) => {
         fetch(request).then((response) => {
             console.log("Retrieved " + request.url + " from network");
             clearTimeout(timeoutId);
+            cache.put(url, response);
             resolve(response);
-        }, reject);
+        }, (error) => {
+            console.log(error);
+            reject();
+        });
     });
 };
 const fromCache = (request) => {
     return caches.open(CACHE_NAME).then((cache) => {
         return cache.match(request).then((matching) => {
             console.log("Retrieved " + request.url + " from cache");
-            return matching || Promise.reject('Requested resource not found in service worker cache.');
+            return matching || Promise.reject('Requested resource (' + request.url + ') not found in service worker cache.');
         });
     });
 };
