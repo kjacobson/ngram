@@ -22,24 +22,44 @@ const CACHED_FILES = [
     './public/images/skip.svg'
 ];
 /* -------------------- */
+const errorPage = (error) => {
+    return new Response(`<html lang="en"><head><meta charset="utf8" /></head><body><h1>Error: ${error}</h1></body></html>`);
+};
+
+const fromNetwork = (request, timeout) => {
+    return new Promise((resolve, reject) => {
+        const timeoutId = setTimeout(reject, timeout);
+        fetch(request).then((response) => {
+            console.log("Retrieved " + request.url + " from network");
+            clearTimeout(timeoutId);
+            resolve(response);
+        }, reject);
+    });
+};
+const fromCache = (request) => {
+    return caches.open(CACHE_NAME).then((cache) => {
+        return cache.match(request).then((matching) => {
+            console.log("Retrieved " + request.url + " from cache");
+            return matching || Promise.reject('Requested resource not found in service worker cache.');
+        });
+    });
+};
 
 self.addEventListener('fetch', (event) => {
-    // if (event.request.url === '') {
-    //     event.respondWith(fetch(event.request).catch(function(e) {
-    //       let foo = {};
-    //       return new Response(JSON.stringify(foo));
-    //     }));
-    //  }
-    event.respondWith(
-        caches.match(event.request).then((response) => {
-            return response || fetch(event.request).then((response) => {
-                cache.put(event.request, response.clone());
-                return response;
-            }).catch((error) => {
-                return new Response('<html lang="en"><head><meta charset="utf8" /></head><body><h1>Error</h1></body></html>');
-            });
-        })
-    );
+    const path = new URL(event.request.url).pathname;
+    if (['/', '/index', '/index.html'].indexOf(path) > -1) {
+        event.respondWith(
+            fromNetwork(event.request, 3000).catch(() => {
+                return fromCache(event.request);
+            }).catch(errorPage)
+        );
+    } else {
+        event.respondWith(
+            fromCache(event.request).catch(() => {
+                return fromNetwork(event.request, 3000);
+            }).catch(errorPage)
+        );
+    }
 });
 
 
