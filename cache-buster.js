@@ -13,7 +13,7 @@ const QUOTE_REGEX = "([\"'])";
 const BUILD_DIR_REGEX = "(?:\.?\.?\/?public\/)";
 const PATH_CHARS_REGEX = "([a-zA-Z0-9\-\_\.\/]+)";
 const MD5_REGEX = "(?:\\+[a-f0-9]{32})?";
-const FILE_EXTENSION_REGEX = "(\.(?:js|gif|jpeg|jpg|html|webmanifest|json|png|svg))";
+const FILE_EXTENSION_REGEX = "((?:\.(?:js|gif|jpeg|jpg|html|webmanifest|json|png|svg|map))+)";
 const STATIC_LINK_REGEX = new RegExp(QUOTE_REGEX + BUILD_DIR_REGEX + PATH_CHARS_REGEX + MD5_REGEX + FILE_EXTENSION_REGEX + QUOTE_REGEX, 'g');
 
 const SW_CACHE_NAME_REGEX = new RegExp("(CACHE_NAME *= *)" + QUOTE_REGEX + "(topwords\-cache)" + QUOTE_REGEX, 'g');
