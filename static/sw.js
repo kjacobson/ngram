@@ -2,6 +2,7 @@ const CACHE_NAME = 'topwords-cache';
 const CACHED_FILES = [
     './public/site.webmanifest',
     './public/browser.js',
+    './public/browser.js.map',
     './public/sw.js',
     './public/ngrams/3-letters.json',
     './public/ngrams/2-letters.json',
@@ -31,9 +32,12 @@ self.addEventListener('fetch', (event) => {
     //  }
     event.respondWith(
         caches.match(event.request).then((response) => {
-            if (response) {
+            return response || fetch(event.request).then((response) => {
+                cache.put(event.request, response.clone());
                 return response;
-            }
+            }).catch((error) => {
+                return new Response('<html lang="en"><head><meta charset="utf8" /></head><body><h1>Error</h1></body></html>');
+            });
         })
     );
 });
