@@ -90,7 +90,7 @@ self.addEventListener('install', (e) => {
                     });
                 })
             ).then(() => {
-                return cache.addAll(uncachedFiles);
+                return cache.addAll(uncachedFiles).catch(console.log);
             });
         }, (err) => {})
     );
