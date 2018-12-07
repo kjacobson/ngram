@@ -11,7 +11,7 @@ const MANIFEST_LOCATION = './static-file-manifest.json';
 
 const QUOTE_REGEX = "([\"'])";
 const BUILD_DIR_REGEX = "(?:\.?\.?\/?public\/)";
-const PATH_CHARS_REGEX = "([a-zA-Z0-9\-\_\.\/]+)";
+const PATH_CHARS_REGEX = "([a-zA-Z0-9\-\_\/]+)";
 const MD5_REGEX = "(?:\\+[a-f0-9]{32})?";
 const FILE_EXTENSION_REGEX = "((?:\.(?:js|gif|jpeg|jpg|html|webmanifest|json|png|svg|map))+)";
 const STATIC_LINK_REGEX = new RegExp(QUOTE_REGEX + BUILD_DIR_REGEX + PATH_CHARS_REGEX + MD5_REGEX + FILE_EXTENSION_REGEX + QUOTE_REGEX, 'g');
@@ -45,7 +45,7 @@ const ensureDirectory = (loc) => {
 
 const filePath = (filePath, dirPath, hash) => {
     if (hash) {
-        const lastDot = filePath.lastIndexOf('.');
+        const lastDot = new RegExp(FILE_EXTENSION_REGEX, 'g').exec(filePath).index;
         const [loc, extension] = lastDot > -1 ? [
             filePath.substring(0, lastDot), 
             filePath.substring(lastDot)
