@@ -1,9 +1,10 @@
 {
     "assets": {
-        "./browser.js": "ab2aa42df406af04498940070e23b0e6",
-        "./browser.js.map": "72330768678124cebae671169a6b093a",
+        "./browser.js": "1d328c5396d3bec1581a3e37a4bb70a9",
+        "./browser.js.map": "f3603cffa36cc45d67ee54833f8101d0",
         "./site.webmanifest": "699b7d19b9a6dce7a59a464511b39822",
-        "./sw.js": "3b777fb7a6b2f2384667aee594c91e6d",
+        "./register-service-worker.js": "fda2477f0f69e368cb9cb55e58c88bc4",
+        "./sw.js": "b126b3302c25700246f9d5cf14359bf6",
         "./ngrams/3-letters.json": "4fff6ccd739525554389bc04c2805b5b",
         "./ngrams/2-letters.json": "02c0bc76964e5e7b9b8df0762a951e95",
         "./images/gear.svg": "93a4c5f7347a4a404154ecbe4705a760",
@@ -25,7 +26,7 @@
         "./index.html",
         "./browser.js",
         "./browser.js.map",
-        "./sw.js",
+        "./register-service-worker.js",
         "./site.webmanifest"
     ]
 }

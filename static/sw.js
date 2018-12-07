@@ -33,9 +33,10 @@ const fromNetwork = (request, timeout) => {
             console.log("Retrieved " + request.url + " from network");
             clearTimeout(timeoutId);
             caches.open(CACHE_NAME).then((cache) => {
-                cache.put(request.url, response.clone()).then(() => {
+                const responseClone = response.clone();
+                cache.put(request.url, response).then(() => {
                     console.log("Cached resource " + request.url);
-                    resolve(response);
+                    resolve(responseClone);
                 }, resolve);
             });
         }, (error) => {
@@ -53,19 +54,31 @@ const fromCache = (request) => {
     });
 };
 
+const checkForNewDocument = (response) => {
+    return self.clients.matchAll().then((clients) => {
+        clients.forEach((client) => {
+            const message = {
+                type: 'refresh',
+                url: response.url,
+                etag: response.headers.get('ETag')
+            };
+            client.postMessage(JSON.stringify(message));
+        });
+    });
+};
+
 self.addEventListener('fetch', (event) => {
     const path = new URL(event.request.url).pathname;
-    if (['/', '/index', '/index.html'].indexOf(path) > -1) {
-        event.respondWith(
-            fromNetwork(event.request, 3000).catch(() => {
-                return fromCache(event.request);
-            }).catch(errorPage)
-        );
-    } else {
-        event.respondWith(
-            fromCache(event.request).catch(() => {
-                return fromNetwork(event.request, 3000);
-            }).catch(errorPage)
+    event.respondWith(
+        fromCache(event.request).catch(() => {
+            console.log("Failed to retrieve " + event.request.url + " from cache. Fetching from network.");
+            return fromNetwork(event.request, 3000);
+        }).catch(errorPage)
+    );
+
+    if (navigator.onLine && ['/', '/index.html', '/index'].includes(path)) {
+        event.waitUntil(
+            fromNetwork(event.request, 3000).then(checkForNewDocument)
         );
     }
 });

@@ -90,6 +90,38 @@ const processFile = (loc) => {
     });
 };
 
+const processServiceWorker = () => {
+    const fileName = './sw.js';
+    const staticPath = filePath(fileName, STATIC_DIR);
+
+    return new Promise((resolve, reject) => {
+        fs.readFile(staticPath, 'utf8', (err, data) => {
+            if (err) {
+                console.error("Error opening " + staticPath + " to rewrite links:", err);
+                resolve();
+            } else {
+                let newFileData = rewriteLinks(data);
+                hash = md5(Math.random());
+                newFileData = newFileData.replace(SW_CACHE_NAME_REGEX, (match, declaration, openQuote, prefix, closeQuote) => {
+                    return `${declaration}${openQuote}${prefix}+${hash}${closeQuote}`;
+                });
+                staticFiles[fileName] = hash;
+
+                const newPath = filePath(fileName, BUILD_DIR, hash);
+                fs.writeFile(newPath, newFileData, 'utf8', (err) => {
+                    if (err) {
+                        console.error("Error writing modified static links to file " + newPath);
+                        resolve();
+                    } else {
+                        console.log("Successfully rewrote links in file " + newPath);
+                        resolve();
+                    }
+                });
+            }
+        });
+    });
+}
+
 const copyFile = (sourceFilePath, newFilePath) => {
     return new Promise((resolve, reject) => {
         fs.copyFile(sourceFilePath, newFilePath, (error) => {
@@ -124,10 +156,7 @@ const rewriteLinks = (file) => {
         let hash = staticFiles['./' + match];
         return hash ? `./${fileName}!${hash}${extension}` : match;
     });
-    file = file.replace(SW_CACHE_NAME_REGEX, (match, declaration, openQuote, prefix, closeQuote) => {
-        let hash = staticFiles['./sw.js'];
-        return hash ? `${declaration}${openQuote}${prefix}+${hash}${closeQuote}` : match;
-    });
+
     return file.replace(STATIC_LINK_REGEX, (match, openQuote, preHashPath, fileExtension, closeQuote) => {
         let hash = staticFiles['./' + preHashPath + fileExtension];
         return hash ?
@@ -172,24 +201,26 @@ rimraf('./public/*', (err) => {
         Promise.all(
             Object.keys(staticFiles).map(processFile)
         ).then(() => {
-            try {
-                const staticFilesJSON = JSON.stringify(
-                    Object.assign(staticFileManifest, { assets: staticFiles}),
-                    null,
-                    4
-                );
-                fs.writeFile(MANIFEST_LOCATION, staticFilesJSON, (err) => {
-                    if (err) {
-                        console.error("Error writing to static file manifest");
-                    } else {
-                        console.info("Successfully hashed static files");
-                        rewriteConsumerFiles();
-                    }
-                });
-            }
-            catch (err) {
-                console.error("Error writing to file manifest due to un-stringifiable JSON", err);
-            }
+            processServiceWorker().then(() => {
+                try {
+                    const staticFilesJSON = JSON.stringify(
+                        Object.assign(staticFileManifest, { assets: staticFiles}),
+                        null,
+                        4
+                    );
+                    fs.writeFile(MANIFEST_LOCATION, staticFilesJSON, (err) => {
+                        if (err) {
+                            console.error("Error writing to static file manifest");
+                        } else {
+                            rewriteConsumerFiles();
+                            console.info("Successfully hashed static files");
+                        }
+                    });
+                }
+                catch (err) {
+                    console.error("Error writing to file manifest due to un-stringifiable JSON", err);
+                }
+            });
         });
     }
 });

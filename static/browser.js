@@ -105,6 +105,7 @@ const moveCursorToEnd = (el) => {
 
 /* PRIVATE INSTANCE METHOD SETUP */
 const 
+    listenForUpdate = Symbol('listenForUpdate'),
     guess = Symbol('guess'),
     handleSettingsOpen = Symbol('handleSettingsOpen'),
     handleSettingsCancel = Symbol('handleSettingsCancel'),
@@ -118,6 +119,7 @@ const
 class BrowserAdapter {
     constructor(EventEmitter) {
         this.emitter = new EventEmitter();
+        this[listenForUpdate]();
     }
 
     /* *
@@ -210,6 +212,22 @@ class BrowserAdapter {
      *
      * */
 
+    [listenForUpdate]() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                if (message.etag && localStorage && localStorage.getItem('indexETag') !== message.etag) {
+                    console.log(message.url + " has changed");
+                    localStorage.setItem('indexETag', message.etag);
+
+                    if (message.type === 'refresh') {
+                        window.location.reload(); 
+                    }
+                }
+            };
+        }
+    }
+
     [guess](input) {
         this.emitter.emit('guess', input);
     }
@@ -287,12 +305,8 @@ const EventEmitter = require('emittery');
 const BrowserAdapter = require('./browser-adapter');
 const index = require('./index');
 
+/* -------------- */
 index.start(EventEmitter, new BrowserAdapter(EventEmitter));
-
-/* --------------HI THERE!------------------ */
-navigator.serviceWorker && navigator.serviceWorker.register('./public/sw.js', { scope : '/' }).then(function(registration) {
-      console.log('Excellent, registered with scope: ', registration.scope);
-});
 
 },{"./browser-adapter":2,"./index":6,"emittery":7}],4:[function(require,module,exports){
 class CountdownTimer {
