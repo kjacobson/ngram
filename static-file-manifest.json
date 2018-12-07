@@ -1,6 +1,7 @@
 {
     "assets": {
         "./browser.js": "1e11822dcc68399c5239e77217bc79fd",
+        "./browser.js.map": "b32b8198f67c38f05b715ae6233a3557",
         "./site.webmanifest": "699b7d19b9a6dce7a59a464511b39822",
         "./sw.js": "e3038e593c36054502957869ee106660",
         "./ngrams/3-letters.json": "4fff6ccd739525554389bc04c2805b5b",
@@ -23,6 +24,7 @@
     "consumers": [
         "./index.html",
         "./browser.js",
+        "./browser.js.map",
         "./sw.js",
         "./site.webmanifest"
     ]
