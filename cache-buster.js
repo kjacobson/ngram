@@ -122,7 +122,7 @@ const replaceFile = (oldHash, newHash, loc) => {
 const rewriteLinks = (file) => {
     file = file.replace(SOURCE_MAP_REGEX, (match, fileName, extension) => {
         let hash = staticFiles['./' + match];
-        return hash ? `${fileName}!${hash}${extension}` : match;
+        return hash ? `./${fileName}!${hash}${extension}` : match;
     });
     file = file.replace(SW_CACHE_NAME_REGEX, (match, declaration, openQuote, prefix, closeQuote) => {
         let hash = staticFiles['./sw.js'];

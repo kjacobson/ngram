@@ -1,7 +1,7 @@
 {
     "assets": {
-        "./browser.js": "02fb0ba18f3208945ddbaa51df0519e2",
-        "./browser.js.map": "c07a5b292c28e51b60292eb8a02cbbc6",
+        "./browser.js": "ab2aa42df406af04498940070e23b0e6",
+        "./browser.js.map": "72330768678124cebae671169a6b093a",
         "./site.webmanifest": "699b7d19b9a6dce7a59a464511b39822",
         "./sw.js": "213c62054995a5ffb438e009dc4e8c68",
         "./ngrams/3-letters.json": "4fff6ccd739525554389bc04c2805b5b",
