@@ -5,7 +5,22 @@ const compression = require('compression');
 const port = process.env.PORT || 9000;
 const staticServer = express();
 
+const serveFromPublic = (app) => {
+    return (req, res, next) => {
+        if (req.url === '/') {
+            req.url = 'public/index.html';
+        } else 
+        if (req.url.indexOf('public/') === -1) {
+            req.url = 'public/' + req.url;
+        }
+        next();
+    };
+};
+
 staticServer.use(compression());
+if (process.env.NODE_ENV === 'development') {
+    staticServer.use(serveFromPublic());
+}
 staticServer.use(express.static(__dirname, {
     dotfiles: 'ignore',
     etag: false,

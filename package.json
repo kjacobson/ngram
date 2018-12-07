@@ -14,7 +14,7 @@
     "s3copy": "aws s3 cp public/ s3://topwords.me --recursive",
     "s3copy-www": "aws s3 cp public/ s3://www.topwords.me --recursive",
     "invalidate": "aws cloudfront create-invalidation --distribution-id EEHXI5BEL7YUZ --paths /index.html",
-    "local": "NODE_ENV=development npm run build && npm run server",
+    "local": "NODE_ENV=development npm run build && NODE_ENV=development npm run server",
     "deploy": "NODE_ENV=production npm run build && npm run s3copy && npm run invalidate"
   },
   "author": "",
