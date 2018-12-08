@@ -52,7 +52,11 @@ const
 class BrowserAdapter {
     constructor(EventEmitter) {
         this.emitter = new EventEmitter();
+
         this[listenForUpdate]();
+        document.onvisibilitychange = () => {
+            this.emitter.emit('visibility-change', document.hidden);
+        };
     }
 
     /* *

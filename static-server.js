@@ -23,7 +23,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 staticServer.use(express.static(__dirname, {
     dotfiles: 'ignore',
-    etag: false,
+    etag: true,
     extensions: ['html', 'htm'],
     maxAge: '1y',
     setHeaders: (res, path, stat) => {

@@ -119,7 +119,11 @@ const
 class BrowserAdapter {
     constructor(EventEmitter) {
         this.emitter = new EventEmitter();
+
         this[listenForUpdate]();
+        document.onvisibilitychange = () => {
+            this.emitter.emit('visibility-change', document.hidden);
+        };
     }
 
     /* *
@@ -447,6 +451,9 @@ class NGramGame {
         this.ioAdapter.emitter.on('edit-settings', this.launchSettingsEditor.bind(this));
         this.ioAdapter.emitter.on('cancel-edit-settings', this.closeSettingsEditor.bind(this));
         this.ioAdapter.emitter.on('skip-to-next', this.skipToNext.bind(this));
+        this.ioAdapter.emitter.on('visibility-change', (hidden) => {
+            this.handleVisibilityChange(hidden);
+        });
 
         this.timer = timer;
         // this.timer.emitter.on('zero', this.loseRound.bind(this));
@@ -466,7 +473,7 @@ class NGramGame {
         this.timer.pause();
         this.setCurrent('win', true);
         this.ioAdapter.recordWin(this.renderData());
-        setTimeout(this.newRound.bind(this), 5000);
+        this.nextRoundCountdown = setTimeout(this.newRound.bind(this), 5000);
         return this;
     }
 
@@ -476,7 +483,7 @@ class NGramGame {
             lose : true
         });
         this.ioAdapter.recordLoss(this.renderData());
-        setTimeout(this.newRound.bind(this), 5000);
+        this.nextRoundCountdown = setTimeout(this.newRound.bind(this), 5000);
         return this;
     }
 
@@ -484,6 +491,26 @@ class NGramGame {
         this.timer.pause();
         this.loseRound();
         return this;
+    }
+
+    handleVisibilityChange(hidden) {
+        if (hidden) {
+            if (this.nextRoundCountdown) {
+                clearTimeout(this.nextRoundCountdown);
+                console.log("Delaying next game until tab regains focus");
+            } else {
+                this.timer.pause();
+                console.log("Paused game until tab regains focus");
+            }
+        } else {
+            if (this.nextRoundCountdown) {
+                this.nextRoundCountdown = setTimeout(this.newRound.bind(this), 3000);
+                console.log("Starting new game in 3 seconds");
+            } else {
+                this.timer.start();
+                console.log("Resuming game");
+            }
+        }
     }
 
     guess(guess) {
@@ -510,6 +537,7 @@ class NGramGame {
         const ngram = randomNGram()
         const words = nGramData.hash[ngram].slice(0, this.settings.numWords());
 
+        this.nextRoundCountdown = null;
         this.setCurrent(Object.assign({}, currentNGramDefaults(), {
             ngram : ngram,
             words : words,
