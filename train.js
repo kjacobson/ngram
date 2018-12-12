@@ -12,6 +12,7 @@ const args = [
   { name: 'min-freq', alias: 'f', type: Number, defaultValue: 0.4 }
 ];
 const config = commandLineArgs(args);
+const previousData = require(`./static/ngrams/${config.letters}-letters.json`);
 
 const ALPHABET = [
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
@@ -22,7 +23,6 @@ const minQualifyingWords = config['min-words'];
 const queryLimit = config['query-limit'];
 const frequencyThreshold = config['min-freq'];
 const scoreThreshold = 900;
-const results = [];
 const knownNGrams = {};
 
 const sortByFrequency = (words) => {
@@ -97,9 +97,7 @@ const fetchTopWords = (ngram, minQualifyingWords) => {
             return response.json();
         }).then(words => {
             words = words.filter(isNotProperNoun).filter(isOneWord).filter(containsVowels);
-            console.log(words);
             words = sortByFrequency(words);
-            console.log(words);
             
             if (words.length >= minQualifyingWords && words[minQualifyingWords-1].frequency > frequencyThreshold) {
                 addKnownNGram(ngram, words);
@@ -113,16 +111,15 @@ const fetchTopWords = (ngram, minQualifyingWords) => {
     });
 };
 
-const fillLetterSpace = (key, space, depth) => {
-    results.push("YOU");
-    // ALPHABET.forEach((letter) => {
-    //     if (depth < numLetters) {
-    //         space[key + letter] = {};
-    //         fillLetterSpace(key + letter, space[key + letter], depth+1);
-    //     } else {
-    //         results.push(key + letter);
-    //     }
-    // });
+const fillLetterSpace = (results, key, space, depth) => {
+    ALPHABET.forEach((letter) => {
+        if (depth < numLetters) {
+            space[key + letter] = {};
+            fillLetterSpace(results, key + letter, space[key + letter], depth+1);
+        } else {
+            results.push(key + letter);
+        }
+    });
+    return results;
 };
-fillLetterSpace('', {}, 1);
-train(results);
+train(previousData ? Object.keys(previousData) : fillLetterSpace([], '', {}, 1));
