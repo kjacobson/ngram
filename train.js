@@ -3,6 +3,8 @@ const Promise = require('es6-promise');
 const fetch = require('isomorphic-fetch');
 const commandLineArgs = require('command-line-args');
 
+const top5k = require('./top-5000-words.json');
+
 const args = [
   { name: 'min-words', alias: 'w', type: Number, defaultValue: 5 },
   { name: 'letters', alias: 'l', type: Number, defaultValue: 3 },
@@ -27,15 +29,25 @@ const sortByFrequency = (words) => {
     return words.map((word) => {
         const wordFrequency = word.tags[word.tags.length-1].substring(2);
         word.frequency = parseFloat(wordFrequency, 10);
+
+        word.frequencyRank = parseInt(top5k[word.word] || 5001, 10);
         return word;  
     }).sort((a, b) => {
-        if (a.frequency > b.frequency) {
+        if (a.frequencyRank === b.frequencyRank) {
+            if (a.frequency > b.frequency) {
+                return -1;
+            } else
+            if (a.frequency < b.frequency) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else
+        if (a.frequencyRank < b.frequencyRank) {
             return -1;
         } else
-        if (a.frequency < b.frequency) {
+        if (b.frequencyRank < a.frequencyRank) {
             return 1;
-        } else {
-            return 0;
         }
     });
 };
@@ -85,7 +97,9 @@ const fetchTopWords = (ngram, minQualifyingWords) => {
             return response.json();
         }).then(words => {
             words = words.filter(isNotProperNoun).filter(isOneWord).filter(containsVowels);
+            console.log(words);
             words = sortByFrequency(words);
+            console.log(words);
             
             if (words.length >= minQualifyingWords && words[minQualifyingWords-1].frequency > frequencyThreshold) {
                 addKnownNGram(ngram, words);
@@ -100,14 +114,15 @@ const fetchTopWords = (ngram, minQualifyingWords) => {
 };
 
 const fillLetterSpace = (key, space, depth) => {
-    ALPHABET.forEach((letter) => {
-        if (depth < numLetters) {
-            space[key + letter] = {};
-            fillLetterSpace(key + letter, space[key + letter], depth+1);
-        } else {
-            results.push(key + letter);
-        }
-    });
+    results.push("YOU");
+    // ALPHABET.forEach((letter) => {
+    //     if (depth < numLetters) {
+    //         space[key + letter] = {};
+    //         fillLetterSpace(key + letter, space[key + letter], depth+1);
+    //     } else {
+    //         results.push(key + letter);
+    //     }
+    // });
 };
 fillLetterSpace('', {}, 1);
 train(results);
