@@ -17,12 +17,12 @@ const CHOICES = {
         120 : 120
     }
 };
+
 const DEFAULTS = {
     numWords : CHOICES.numWords[5],
     nGramLength : CHOICES.nGramLength[3],
     time : CHOICES.time[60]
 };
-
 
 const validator = {
     set : (obj, prop, value) => {
@@ -42,7 +42,7 @@ class AppSettings {
     }
 
     reset(settings = {}) {
-        const { numWords, nGramLength, time } = settings;
+        const { numWords, nGramLength, time  } = settings;
         this.settings.numWords = numWords;
         this.settings.nGramLength = nGramLength;
         this.settings.time = time;
@@ -304,7 +304,7 @@ class BrowserAdapter {
 
 module.exports = BrowserAdapter;
 
-},{"./templates":8}],3:[function(require,module,exports){
+},{"./templates":9}],3:[function(require,module,exports){
 const EventEmitter = require('emittery');
 const BrowserAdapter = require('./browser-adapter');
 const index = require('./index');
@@ -312,7 +312,7 @@ const index = require('./index');
 /* -------------- */
 index.start(EventEmitter, new BrowserAdapter(EventEmitter));
 
-},{"./browser-adapter":2,"./index":6,"emittery":7}],4:[function(require,module,exports){
+},{"./browser-adapter":2,"./index":7,"emittery":8}],4:[function(require,module,exports){
 class CountdownTimer {
     constructor(duration, eventEmitter) {
         this.duration = duration;
@@ -378,10 +378,120 @@ module.exports = formattedTime = (remaining, showMinutes = false) => {
 };
 
 },{}],6:[function(require,module,exports){
+'use strict';
+
+const DEFAULTS = {
+    ngram : '',
+    words : [],
+    hash : {},
+    guessed : 0,
+    recentCorrectGuess : null,
+    inputValue : '',
+    win : false,
+    lose : false
+}
+
+const gameplayValidators = {
+    ngram: (value) => {
+        return typeof value === "string";
+    },
+    words: (value) => {
+        return Array.isArray(value);
+    },
+    hash : (value) => {
+        return typeof value === "object";
+    },
+    guessed : (value) => {
+        return typeof value === "number" && Number.isInteger(value);
+    },
+    recentCorrectGuess : (value, obj) => {
+        return value === null ||
+            (typeof value === "string" && obj.hash.hasOwnProperty(value));
+    },
+    inputValue: (value) => {
+        return typeof value === "string";
+    },
+    win: (value) => {
+        return typeof value === "boolean";
+    },
+    lose: (value) => {
+        return typeof value === "boolean";
+    }
+}
+
+const gameplayValidator = {
+    set : (obj, prop, value) => {
+        if (gameplayValidators.hasOwnProperty(prop) && gameplayValidators[prop](value, obj)) {
+            obj[prop] = value;
+            return true;
+        } else {
+            obj[prop] = DEFAULTS[prop];
+            return false;
+        }
+    }
+}
+
+class GameplaySettings {
+    constructor() {
+        this.settings = new Proxy(Object.assign({}, DEFAULTS), gameplayValidator);
+        this.editing = false;
+        return this;
+    }
+
+    setAsGuessed(word) {
+        this.settings.hash[word] = true;
+        this.settings.guessed++;
+        this.settings.recentCorrectGuess = word;
+        this.settings.inputValue = '';
+        clearTimeout(this.recentGuessTimer);
+        this.recentGuessTimer = setTimeout(() => {
+            this.settings.recentCorrectGuess = null;
+        }, 5000);
+    }
+
+    win() {
+        this.settings.win = true;
+    }
+
+    lose() {
+        this.settings.inputValue = DEFAULTS.inputValue;
+        this.settings.lose = true;
+    }
+
+    guess(guess) {
+        this.settings.inputValue = guess;
+        return this.isCorrectAndNewGuess(guess);
+    }
+
+    newRound(ngram, words) {
+        Object.assign(this.settings, DEFAULTS, {
+            ngram : ngram,
+            words : words,
+            hash : words.reduce((acc, word) => {
+                acc[word] = false;
+                return acc;
+            }, {})
+        });
+    }
+
+    isCorrectAndNewGuess(guess) {
+        return this.settings.hash.hasOwnProperty(guess) &&
+            this.settings.hash[guess] === false;
+    }
+
+    isWon() {
+        return this.settings.guessed === this.settings.words.length;
+    }
+}
+
+module.exports = GameplaySettings;
+
+},{}],7:[function(require,module,exports){
 "use strict";
 
 const CountdownTimer = require('./countdown-timer');
 const AppSettings = require('./app-settings');
+const GameplaySettings = require('./gameplay-settings');
 
 
 const nGramDataDefaults = () => {
@@ -394,56 +504,9 @@ const nGramDataDefaults = () => {
 };
 let nGramData;
 
-const setObjProperty = (obj, key, val) => {
-    if (obj.hasOwnProperty(key)) {
-        obj[key] = val;
-    }
-};
-const setViaHashOrPair = (targetObj, key, val) => {
-    if (typeof key === 'string') {
-        setObjProperty(targetObj, key, val);
-    } else
-    if (typeof key === 'object') {
-        const obj = key;
-        for (let k in obj) {
-            setObjProperty(targetObj, k, obj[k]);
-        }
-    }
-};
-
-const currentNGramDefaults = () => {
-   return {
-        ngram : '',
-        words : [],
-        hash : {},
-        guessed : 0,
-        recentCorrectGuess : null,
-        inputValue : '',
-        win : false,
-        lose : false,
-        editingSettings : false
-    }
-};
-
 class NGramGame {
     constructor(ioAdapter, timer, settings) {
-        const currentNGram = currentNGramDefaults();
         let recentGuessTimer;
-
-        this.getCurrent = () => currentNGram;
-        this.setCurrent = (...args) => {
-            setViaHashOrPair(currentNGram, ...args);
-        };
-        this.setAsGuessed = (word) => {
-            currentNGram.hash[word] = true;
-            currentNGram.guessed++;
-            currentNGram.recentCorrectGuess = word;
-            currentNGram.inputValue = '';
-            clearTimeout(recentGuessTimer);
-            recentGuessTimer = setTimeout(() => {
-                currentNGram.recentCorrectGuess = null;
-            }, 5000);
-        };
 
         this.ioAdapter = ioAdapter;
         this.ioAdapter.emitter.on('guess', this.guess.bind(this));
@@ -465,23 +528,21 @@ class NGramGame {
         });
         
         this.settings = settings;
+        this.gameplay = new GameplaySettings();
 
         return this;
     }
 
     winRound() {
         this.timer.pause();
-        this.setCurrent('win', true);
+        this.gameplay.win();
         this.ioAdapter.recordWin(this.renderData());
         this.nextRoundCountdown = setTimeout(this.newRound.bind(this), 5000);
         return this;
     }
 
     loseRound() {
-        this.setCurrent({
-            inputValue : '',
-            lose : true
-        });
+        this.gameplay.lose();
         this.ioAdapter.recordLoss(this.renderData());
         this.nextRoundCountdown = setTimeout(this.newRound.bind(this), 5000);
         return this;
@@ -514,18 +575,15 @@ class NGramGame {
     }
 
     guess(guess) {
-        this.setCurrent('inputValue', guess);
-
-        const correctAndNew = this.getCurrent().hash.hasOwnProperty(guess) && this.getCurrent().hash[guess] === false;
-        if (correctAndNew) {
+        if (this.gameplay.guess(guess)) {
             this.recordCorrectGuess(guess);
         }
         return this;
     }
 
     recordCorrectGuess(guess) {
-        this.setAsGuessed(guess);
-        if (this.getCurrent().guessed === this.settings.numWords()) {
+        this.gameplay.setAsGuessed(guess);
+        if (this.gameplay.isWon()) {
             this.winRound();
         } else {
             this.ioAdapter.recordCorrectGuess(this.renderData());
@@ -538,14 +596,8 @@ class NGramGame {
         const words = nGramData.hash[ngram].slice(0, this.settings.numWords());
 
         this.nextRoundCountdown = null;
-        this.setCurrent(Object.assign({}, currentNGramDefaults(), {
-            ngram : ngram,
-            words : words,
-            hash : words.reduce((acc, word) => {
-                acc[word] = false;
-                return acc;
-            }, {})
-        }));
+        this.gameplay.newRound(ngram, words);
+        
         if (this.settings.time() !== this.timer.duration) {
             this.timer.changeDuration(this.settings.time());
         }
@@ -558,7 +610,7 @@ class NGramGame {
 
     launchSettingsEditor() {
         this.timer.pause();
-        this.setCurrent('editingSettings', true);
+        this.gameplay.editingSettings = true;
         this.ioAdapter.launchSettingsEditor(this.renderData());
     }
 
@@ -568,7 +620,7 @@ class NGramGame {
             load = true;
         }
         this.settings.reset(settings);
-        this.setCurrent('editingSettings', false);
+        this.gameplay.editingSettings = false;
 
         if (load) {
             this.ioAdapter.loadNGramData(this.settings.nGramLength()).then((data) => {
@@ -581,13 +633,13 @@ class NGramGame {
     }
 
     closeSettingsEditor() {
-        this.setCurrent('editingSettings', false);
+        this.gameplay.editingSettings = false;
         this.ioAdapter.closeSettingsEditor(this.renderData());
         this.timer.start();
     }
 
     renderData() {
-        return Object.assign({}, this.getCurrent(), {
+        return Object.assign({}, this.gameplay.settings, {
             originalTime : this.timer.duration,
             remainingTime : this.timer.remaining,
             numWords : this.settings.numWords(),
@@ -641,7 +693,7 @@ const start = (EventEmitter, ioAdapter, settings) => {
 
 module.exports = { start };
 
-},{"./app-settings":1,"./countdown-timer":4}],7:[function(require,module,exports){
+},{"./app-settings":1,"./countdown-timer":4,"./gameplay-settings":6}],8:[function(require,module,exports){
 'use strict';
 
 const anyMap = new WeakMap();
@@ -795,7 +847,7 @@ Object.defineProperty(Emittery.Typed, 'Typed', {
 
 module.exports = Emittery;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 const formattedTime = require('./formatted-time');
 
 const app = ({numWords, ngramLength, ngram, inputValue, hash, words, remainingTime, originalTime, win, lose, editingSettings}) => {

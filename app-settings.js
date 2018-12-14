@@ -16,12 +16,12 @@ const CHOICES = {
         120 : 120
     }
 };
+
 const DEFAULTS = {
     numWords : CHOICES.numWords[5],
     nGramLength : CHOICES.nGramLength[3],
     time : CHOICES.time[60]
 };
-
 
 const validator = {
     set : (obj, prop, value) => {
@@ -41,7 +41,7 @@ class AppSettings {
     }
 
     reset(settings = {}) {
-        const { numWords, nGramLength, time } = settings;
+        const { numWords, nGramLength, time  } = settings;
         this.settings.numWords = numWords;
         this.settings.nGramLength = nGramLength;
         this.settings.time = time;
