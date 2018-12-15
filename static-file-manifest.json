@@ -1,10 +1,10 @@
 {
     "assets": {
-        "./browser.js": "c92b84f17333dc5cc6fbfda3a112af17",
-        "./browser.js.map": "6363ff2c53f28fba4bb12945b21d99ff",
+        "./browser.js": "1434be0e76b472306c4a1d480e0c8faf",
+        "./browser.js.map": "81732dbc3bffb43ebdc00cfb375b6f27",
         "./site.webmanifest": "52fbb22a78596a5f700eee6d7253d789",
         "./register-service-worker.js": "fda2477f0f69e368cb9cb55e58c88bc4",
-        "./sw.js": "a1b20bce3c63f0030b1952650dac48a2",
+        "./sw.js": "7e0b9e420b5d13ccb7fbd77dfa31959a",
         "./ngrams/3-letters.json": "eb2eeaac55c8d262333798bcad91bea8",
         "./ngrams/2-letters.json": "02c0bc76964e5e7b9b8df0762a951e95",
         "./images/gear.svg": "93a4c5f7347a4a404154ecbe4705a760",

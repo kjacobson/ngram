@@ -33,10 +33,22 @@ const validator = {
     }
 };
 
+const nGramDataDefaults = () => {
+    return {
+        hash : {},
+        arr : [],
+        seen : {},
+        count : 0
+    };
+};
+
+
 class AppSettings {
     constructor(settings = {}) {
         this.settings = new Proxy(Object.assign({}, DEFAULTS), validator);
         this.reset(settings);
+
+        this.nGramData = nGramDataDefaults();
         return this;
     }
 
@@ -45,6 +57,16 @@ class AppSettings {
         this.settings.numWords = numWords;
         this.settings.nGramLength = nGramLength;
         this.settings.time = time;
+        return this;
+    }
+
+    storeNGramData(data, seen) {
+        this.nGramData = Object.assign(nGramDataDefaults(), {
+            hash : data,
+            arr : Object.keys(data),
+            count : Object.keys(data).length,
+            seen : seen || {}
+        });
         return this;
     }
 

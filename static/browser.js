@@ -34,10 +34,22 @@ const validator = {
     }
 };
 
+const nGramDataDefaults = () => {
+    return {
+        hash : {},
+        arr : [],
+        seen : {},
+        count : 0
+    };
+};
+
+
 class AppSettings {
     constructor(settings = {}) {
         this.settings = new Proxy(Object.assign({}, DEFAULTS), validator);
         this.reset(settings);
+
+        this.nGramData = nGramDataDefaults();
         return this;
     }
 
@@ -46,6 +58,16 @@ class AppSettings {
         this.settings.numWords = numWords;
         this.settings.nGramLength = nGramLength;
         this.settings.time = time;
+        return this;
+    }
+
+    storeNGramData(data, seen) {
+        this.nGramData = Object.assign(nGramDataDefaults(), {
+            hash : data,
+            arr : Object.keys(data),
+            count : Object.keys(data).length,
+            seen : seen || {}
+        });
         return this;
     }
 
@@ -494,15 +516,6 @@ const AppSettings = require('./app-settings');
 const GameplaySettings = require('./gameplay-settings');
 
 
-const nGramDataDefaults = () => {
-    return {
-        hash : {},
-        arr : [],
-        seen : {},
-        count : 0
-    };
-};
-let nGramData;
 
 class NGramGame {
     constructor(ioAdapter, timer, settings) {
@@ -592,8 +605,8 @@ class NGramGame {
     }
 
     newRound() {
-        const ngram = randomNGram()
-        const words = nGramData.hash[ngram].slice(0, this.settings.numWords());
+        const ngram = this.randomNGram()
+        const words = this.settings.nGramData.hash[ngram].slice(0, this.settings.numWords());
 
         this.nextRoundCountdown = null;
         this.gameplay.newRound(ngram, words);
@@ -604,8 +617,8 @@ class NGramGame {
         this.timer.clear().start();
         this.ioAdapter.beginNewRound(this.renderData());
 
-        nGramData.seen[ngram] = true;
-        this.ioAdapter.updateSeenCache(nGramData.seen);
+        this.settings.nGramData.seen[ngram] = true;
+        this.ioAdapter.updateSeenCache(this.settings.nGramData.seen);
     }
 
     launchSettingsEditor() {
@@ -624,7 +637,7 @@ class NGramGame {
 
         if (load) {
             this.ioAdapter.loadNGramData(this.settings.nGramLength()).then((data) => {
-                nGramData = storeNGramData(data, nGramData.seen);
+                this.settings.storeNGramData(data, this.settings.nGramData.seen);
                 this.newRound();
             });
         } else {
@@ -646,41 +659,29 @@ class NGramGame {
             ngramLength : this.settings.nGramLength()
         });
     }
+
+    randomNGram(i = 0) {
+        if (i >= this.settings.nGramData.count) {
+            this.settings.nGramData.seen = {};
+            this.ioAdapter.updateSeenCache({});
+        }
+
+        const index = Math.floor(
+            Math.random() * (this.settings.nGramData.count)
+        );
+        const ngram = this.settings.nGramData.arr[index];
+        return this.settings.nGramData.seen[ngram] ? 
+            this.randomNGram(i+1) :
+            ngram;
+    }
 }
-
-const storeNGramData = (data, seen) => {
-    const _nGramData = Object.assign(nGramDataDefaults(), {
-        hash : data,
-        arr : Object.keys(data),
-        count : Object.keys(data).length,
-    });
-    if (seen) {
-        _nGramData.seen = seen;
-    }
-    return _nGramData;
-};
-
-const randomNGram = (i = 0) => {
-    if (i >= nGramData.count) {
-        nGramData.seen = {};
-        updateSeenCache({});
-    }
-
-    const index = Math.floor(
-        Math.random() * (nGramData.count)
-    );
-    const ngram = nGramData.arr[index];
-    return nGramData.seen[ngram] ? 
-        randomNGram(i+1) :
-        ngram;
-};
 
 const start = (EventEmitter, ioAdapter, settings) => {
     const appSettings = new AppSettings(settings);
     const timer = new CountdownTimer(appSettings.time(), new EventEmitter());
 
     ioAdapter.loadNGramData(appSettings.nGramLength()).then((data) => {
-        nGramData = storeNGramData(data, ioAdapter.retrieveSeenCache());
+        appSettings.storeNGramData(data, ioAdapter.retrieveSeenCache());
         const game = new NGramGame(
             ioAdapter,
             timer,
