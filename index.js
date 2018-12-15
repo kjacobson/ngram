@@ -95,7 +95,7 @@ class NGramGame {
 
     newRound() {
         const ngram = this.randomNGram()
-        const words = this.settings.nGramData.hash[ngram].slice(0, this.settings.numWords());
+        const words = this.settings.retrieveWordsForNGram(ngram);
 
         this.nextRoundCountdown = null;
         this.gameplay.newRound(ngram, words);

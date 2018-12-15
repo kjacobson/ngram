@@ -70,6 +70,10 @@ class AppSettings {
         return this;
     }
 
+    retrieveWordsForNGram(ngram) {
+        return this.nGramData.hash[ngram].slice(0, this.numWords());
+    }
+
     numWords() {
         return this.settings.numWords;
     }
