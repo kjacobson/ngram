@@ -54,7 +54,7 @@ const gameplayValidator = {
 class GameplaySettings {
     constructor() {
         this.settings = new Proxy(Object.assign({}, DEFAULTS), gameplayValidator);
-        this.editing = false;
+        this.editingSettings = false;
         return this;
     }
 

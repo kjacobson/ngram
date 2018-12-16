@@ -8,9 +8,19 @@ const GameplaySettings = require('./gameplay-settings');
 
 class NGramGame {
     constructor(ioAdapter, timer, settings) {
-        let recentGuessTimer;
-
         this.ioAdapter = ioAdapter;
+        this.timer = timer;
+        this.settings = settings;
+        this.gameplay = new GameplaySettings();
+
+        // this.timer.emitter.on('zero', this.loseRound.bind(this));
+        this.timer.emitter.on('tick', (remaining) => {
+            this.ioAdapter.showTimeRemaining(this.renderData());
+            if (remaining === 0) {
+                this.loseRound();
+            }
+        });
+
         this.ioAdapter.emitter.on('guess', this.guess.bind(this));
         this.ioAdapter.emitter.on('settings-change', this.changeSettings.bind(this));
         this.ioAdapter.emitter.on('edit-settings', this.launchSettingsEditor.bind(this));
@@ -19,18 +29,7 @@ class NGramGame {
         this.ioAdapter.emitter.on('visibility-change', (hidden) => {
             this.handleVisibilityChange(hidden);
         });
-
-        this.timer = timer;
-        // this.timer.emitter.on('zero', this.loseRound.bind(this));
-        this.timer.emitter.on('tick', (remaining) => {
-            this.ioAdapter.showTimeRemaining(this.renderData());
-            if (remaining === 0) {
-                this.loseRound();
-            }
-        });
         
-        this.settings = settings;
-        this.gameplay = new GameplaySettings();
 
         return this;
     }
@@ -142,6 +141,7 @@ class NGramGame {
 
     renderData() {
         return Object.assign({}, this.gameplay.settings, {
+            editingSettings : this.gameplay.editingSettings,
             originalTime : this.timer.duration,
             remainingTime : this.timer.remaining,
             numWords : this.settings.numWords(),
