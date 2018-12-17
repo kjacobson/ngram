@@ -158,7 +158,7 @@ class BrowserAdapter {
                     localStorage.setItem('indexETag', message.etag);
 
                     if (message.type === 'refresh') {
-                        window.location.reload(); 
+                        document.body.classList.add('update-available');
                     }
                 }
             };
@@ -213,7 +213,7 @@ class BrowserAdapter {
 
     /* RENDERING */
     [renderApp](renderData) {
-        document.body.innerHTML = appTemplate(renderData);
+        document.getElementById('appContainer').innerHTML = appTemplate(renderData);
         this[bindEvents]();
         moveCursorToEnd(document.getElementById('guessInput'));
     }

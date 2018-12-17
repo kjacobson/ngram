@@ -251,7 +251,7 @@ class BrowserAdapter {
                     localStorage.setItem('indexETag', message.etag);
 
                     if (message.type === 'refresh') {
-                        window.location.reload(); 
+                        document.body.classList.add('update-available');
                     }
                 }
             };
@@ -306,7 +306,7 @@ class BrowserAdapter {
 
     /* RENDERING */
     [renderApp](renderData) {
-        document.body.innerHTML = appTemplate(renderData);
+        document.getElementById('appContainer').innerHTML = appTemplate(renderData);
         this[bindEvents]();
         moveCursorToEnd(document.getElementById('guessInput'));
     }
@@ -443,7 +443,7 @@ const gameplayValidators = {
     lose: (value) => {
         return typeof value === "boolean";
     }
-}
+};
 
 const gameplayValidator = {
     set : (obj, prop, value) => {
@@ -455,7 +455,7 @@ const gameplayValidator = {
             return false;
         }
     }
-}
+};
 
 class GameplaySettings {
     constructor() {
@@ -858,20 +858,12 @@ const formattedTime = require('./formatted-time');
 const app = ({numWords, ngramLength, ngram, inputValue, hash, words, remainingTime, originalTime, win, lose, editingSettings}) => {
     const showMinutes = originalTime / 60 >= 1;
     return (
-        nav() +
         h1(numWords, ngram, lose || win) +
         form(inputValue, remainingTime, showMinutes) +
         scoreBoard(words, hash, win, lose) +
         (win ? winNotification() : '') +
         (editingSettings ? settingsEditor(ngramLength, numWords, originalTime) : '')
     );
-};
-
-const nav = () => {
-    return `<nav>
-        <a href="/" id="homeLink" class="home-link" title="TBH, this just refreshes the page">TopWords.me</a>
-        <a href="#settings" id="settingsLink" class="settings-link" title="Change gameplay settings">Settings</a>
-    </nav>`;
 };
 
 const h1 = (numWords, ngram, gameOver) => {

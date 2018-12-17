@@ -29,7 +29,7 @@
             background-color: #083550;
             color: #fff;
             overflow: hidden;
-            padding: 0.5em;
+            padding: 0.5em 1em;
         }
         nav #homeLink {
             background: url('./public/images/spinning-top.svg') no-repeat 0 0;
@@ -200,12 +200,31 @@
             vertical-align: top;
         }
 
+        #updateNotice {
+            background: #FA6900;
+            bottom: 0;
+            display: none;
+            font-weight: bold;
+            left: 0;
+            right: 0;
+            padding: 0.5em;
+            position: fixed;
+            text-align: center;
+            text-decoration: none;
+        }
+        #updateNotice:visited {
+            color: inherit;
+        }
+        .update-available #updateNotice {
+            display: block;
+        }
+
         @media screen and (min-width: 50em) {
-            body {
+            #appContainer {
                 display: flex;
                 flex-wrap: wrap;
             }
-            nav, h1 {
+            h1 {
                 flex-basis: auto;
                 width: 100%;
             }
@@ -236,15 +255,20 @@
         <a href="/" id="homeLink" class="home-link" title="TBH, this just refreshes the page">TopWords.me</a>
         <a href="#settings" id="settingsLink" class="settings-link" title="Change gameplay settings">Settings</a>
     </nav>
-    <h1>Loading &hellip;</h1>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="loading-image">
-        <circle cx="50" cy="50" r="0" fill="none" stroke="#083550" stroke-width="4">
-            <animate attributeName="r" calcMode="spline" values="0;40" keyTimes="0;1" dur="2" keySplines="0 0.2 0.8 1" begin="-1s" repeatCount="indefinite"></animate>
-        </circle>
-        <circle cx="50" cy="50" r="0" fill="none" stroke="#FA6900" stroke-width="4">
-            <animate attributeName="r" calcMode="spline" values="0;40" keyTimes="0;1" dur="2" keySplines="0 0.2 0.8 1" begin="0s" repeatCount="indefinite"></animate>
-        </circle>
-    </svg>
+    <main id="appContainer">
+        <h1>Loading &hellip;</h1>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="loading-image">
+            <circle cx="50" cy="50" r="0" fill="none" stroke="#083550" stroke-width="4">
+                <animate attributeName="r" calcMode="spline" values="0;40" keyTimes="0;1" dur="2" keySplines="0 0.2 0.8 1" begin="-1s" repeatCount="indefinite"></animate>
+            </circle>
+            <circle cx="50" cy="50" r="0" fill="none" stroke="#FA6900" stroke-width="4">
+                <animate attributeName="r" calcMode="spline" values="0;40" keyTimes="0;1" dur="2" keySplines="0 0.2 0.8 1" begin="0s" repeatCount="indefinite"></animate>
+            </circle>
+        </svg>
+    </main>
+    <a href="/" id="updateNotice">
+        Update available. Click to reload.
+    </a>
     <script src="./public/browser.js"></script>
     <script src="./public/register-service-worker.js"></script>
   </body>

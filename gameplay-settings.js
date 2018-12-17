@@ -37,7 +37,7 @@ const gameplayValidators = {
     lose: (value) => {
         return typeof value === "boolean";
     }
-}
+};
 
 const gameplayValidator = {
     set : (obj, prop, value) => {
@@ -49,7 +49,7 @@ const gameplayValidator = {
             return false;
         }
     }
-}
+};
 
 class GameplaySettings {
     constructor() {
