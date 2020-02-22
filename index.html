@@ -23,15 +23,15 @@
             min-height: 100%;
         }
         body {
-            background: #3B8686;
-            background: linear-gradient(180deg, rgba(59,134,134,1) 0%, rgba(59,134,134,0.75) 100%) no-repeat;
+            background: #fff;
             font-family: sans-serif;
             margin: 0;
             min-height: 100%;
             padding: 0;
         }
         nav {
-            background-color: #083550;
+            background-color: #3b8686;
+            background: #333;
             color: #fff;
             overflow: hidden;
             padding: 0.5em 1em;
@@ -57,15 +57,15 @@
             width: 1.5em;
         }
         h1 {
-            background: #0B486B;
-            color: #fff;
+            background: #f3f6f6;
+            color: #333;
             font-size: 1em;
             margin: 0;
             padding: 1em;
             text-align: center;
         }
         h1 > var {
-            color: #FA6900;
+            color: #3b8686;
             display: block;
             font-size: 2em;
             font-style: normal;
@@ -101,11 +101,11 @@
         #timerContainer {
             position: absolute;
             right: 0.5em;
-            top: 0.5em;
+            top: 0.7em;
         }
 
         time {
-            color: #083550;
+            color: #333;
             font-size: 2em;
             font-style: normal;
             font-weight: bold;
@@ -118,44 +118,43 @@
         }
 
         ol {
-            list-style: none;
             margin: 4.25em 0 0;
             padding: 0;
         }
         ol > li {
-            background: #fff;
-            border-radius: 2px;
-            color: #052335;
-            display: block;
+            border-bottom: 1px dashed rgb(98, 98, 98);
+            color: rgb(98, 98, 98);
             height: 1em;
             line-height: 1em;
-            list-style: none;
+            list-style-position: inside;
+            list-style-color: #555;
             margin: 0.25em 1em;
             padding: 0.5em;
         }
         ol > li.correct {
-            background-color: #CFF09E;
+            border-color: #3b8686;
+            color: #333;
+            font-weight: bold;
         }
         ol > li.incorrect {
-            background-color: #FDDBDE;
+            font-style: italic;
         }
         #guessInput {
-            background: #E0E4CC;
-            border: 0;
+            background: #f3f6f6;
+            border: 4px solid #3b8686;
             border-radius: 2px;
-            color: #052335;
+            color: #333;
             display: block;
             font-size: 1.5em;
             height: 2em;
             line-height: 2em;
-            list-style: none;
             padding: 0;
             text-indent: 0.5em;
             width: 100%;
         }
 
         #winNotification {
-            color: #FA6900;
+            color: #3b8686;
             display: block;
             font-size: 3em;
             left: 50%;
@@ -167,10 +166,10 @@
         }
 
         #settingsEditor {
-            background: #0B486B;
+            background: #222;
             border-left: 2px solid #fff;
             bottom: 0;
-            color: #fff;
+            color: #efefef;
             left: 2em;
             padding: 2em;
             position: fixed;
@@ -178,7 +177,7 @@
             top: 0;
             z-index: 1;
         }
-        
+
         #settingsForm label {
             display: block;
         }
@@ -188,13 +187,14 @@
             margin: 0 0 1em;
         }
         #settingsForm button[type="submit"] {
-            background-color: #FA6900;
+            background-color: #3b8686;
             border-radius: 4px;
-            border: 1px solid #fff;
+            border: 0;
             color: #fff;
             font-size: 1.5em;
             font-weight: bold;
             line-height: 1.5em;
+            padding: 0.1em 0.5em;
         }
         #cancelEditSettings {
             color: #fff;
@@ -206,8 +206,9 @@
         }
 
         #updateNotice {
-            background: #FA6900;
+            background: #3b8686;
             bottom: 0;
+            color: #333;
             display: none;
             font-weight: bold;
             left: 0;
@@ -241,7 +242,7 @@
                 position: relative;
             }
                 #timerContainer {
-                    top: 0;
+                    top: 5px;
                 }
             ol {
                 flex: 2;
@@ -263,7 +264,7 @@
     <main id="appContainer">
         <h1>Loading &hellip;</h1>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="loading-image">
-            <circle cx="50" cy="50" r="0" fill="none" stroke="#083550" stroke-width="4">
+            <circle cx="50" cy="50" r="0" fill="none" stroke="#3b8686" stroke-width="4">
                 <animate attributeName="r" calcMode="spline" values="0;40" keyTimes="0;1" dur="2" keySplines="0 0.2 0.8 1" begin="-1s" repeatCount="indefinite"></animate>
             </circle>
             <circle cx="50" cy="50" r="0" fill="none" stroke="#FA6900" stroke-width="4">
