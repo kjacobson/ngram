@@ -37,7 +37,8 @@
     "load-scripts": "^1.0.0",
     "md5": "^2.2.1",
     "mkdirp": "^0.5.1",
-    "rimraf": "^2.6.2"
+    "rimraf": "^2.6.2",
+    "stemmer": "^1.0.3"
   },
   "files": [
     "build/",
