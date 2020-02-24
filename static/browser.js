@@ -176,28 +176,34 @@ class BrowserAdapter {
 
     /* LOCAL STORAGE CACHE */
     retrieveSeenCache() {
-        let seenNGrams = localStorage.getItem(SEEN_STORAGE_KEY);
-        if (seenNGrams) {
-            try {
-                seenNGrams = Object.assign({}, JSON.parse(seenNGrams));
-            }
-            catch(err) {
-                console.log(err);
+        if (localStorage) {
+            let seenNGrams = localStorage.getItem(SEEN_STORAGE_KEY);
+            if (seenNGrams) {
+                try {
+                    seenNGrams = Object.assign({}, JSON.parse(seenNGrams));
+                }
+                catch(err) {
+                    console.log(err);
+                    seenNGrams = {};
+                }
+            } else {
                 seenNGrams = {};
             }
+            return seenNGrams;
         } else {
-            seenNGrams = {};
+            return {};
         }
-        return seenNGrams;
     }
 
     updateSeenCache(seenData) {
-        try {
-            let data = JSON.stringify(seenData);
-            localStorage.setItem(SEEN_STORAGE_KEY, data);
-        }
-        catch(err) {
-            console.log(err);
+        if (localStorage) {
+            try {
+                let data = JSON.stringify(seenData);
+                localStorage.setItem(SEEN_STORAGE_KEY, data);
+            }
+            catch(err) {
+                console.log(err);
+            }
         }
     }
 
