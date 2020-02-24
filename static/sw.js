@@ -60,10 +60,11 @@ const checkForNewDocument = (response) => {
             const message = {
                 type: 'refresh',
                 url: response.url,
-                modified: response.headers.get('last-modified') || response.headers.get('Last-Modified')
+                etag: response.headers.get('ETag')
             };
             client.postMessage(JSON.stringify(message));
         });
+        return Promise.resolve();
     });
 };
 

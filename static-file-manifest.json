@@ -1,10 +1,8 @@
 {
     "assets": {
-        "./browser.js": "930f89f49fb525af67f4aedefe103969",
-        "./browser.js.map": "16221a5154474a04d9afa56ecccb565c",
+        "./browser.js": "22a92272df91d72d998cb8063fc82cd4",
+        "./browser.js.map": "7719b3348fcebbde46d75bd2954d454b",
         "./site.webmanifest": "7e0a6c72546e9794ac2477c41d73a550",
-        "./register-service-worker.js": "fda2477f0f69e368cb9cb55e58c88bc4",
-        "./sw.js": "d19f7281cc03480aba91631d7a0cd3ba",
         "./ngrams/3-letters.json": "230d01ca2aa7ee811d003f31793e4df8",
         "./ngrams/2-letters.json": "c5fdea5768b2daee7d460e5e4d298921",
         "./images/gear.svg": "93a4c5f7347a4a404154ecbe4705a760",
@@ -23,7 +21,9 @@
         "./images/android-chrome-192x192.png": "366a0964657ef4cbdeeabb3b8e6487da",
         "./images/mstile-310x150.png": "c556f843848eb8bdc68426b147b4f0b4",
         "./images/mstile-310x310.png": "9b11c1334106a2c2dc21ff7fdd5693a2",
-        "./images/android-chrome-512x512.png": "0504b07af2a3b782f4103f78c139901c"
+        "./images/android-chrome-512x512.png": "0504b07af2a3b782f4103f78c139901c",
+        "./sw.js": "6732ec838499115ed24cea79162db02f",
+        "./register-service-worker.js": "fda2477f0f69e368cb9cb55e58c88bc4"
     },
     "consumers": [
         "./index.html",

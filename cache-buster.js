@@ -17,7 +17,8 @@ const FILE_EXTENSION_REGEX = "((?:\.(?:js|gif|jpeg|jpg|html|webmanifest|json|png
 const STATIC_LINK_REGEX = new RegExp(QUOTE_REGEX + BUILD_DIR_REGEX + PATH_CHARS_REGEX + MD5_REGEX + FILE_EXTENSION_REGEX + QUOTE_REGEX, 'g');
 
 const SW_CACHE_NAME_REGEX = new RegExp("(CACHE_NAME *= *)" + QUOTE_REGEX + "(topwords\-cache)" + QUOTE_REGEX, 'g');
-const SOURCE_MAP_REGEX = new RegExp("(browser)(\.js\.map)");
+const SW_FILE_NAME_REGEX = new RegExp("sw\![a-f0-9]{32}\.js");
+const SOURCE_MAP_REGEX = new RegExp(BUILD_DIR_REGEX + "(browser)(\.js\.map)");
 
 const staticFileManifest = require(MANIFEST_LOCATION);
 const staticFiles = staticFileManifest.assets;
@@ -74,15 +75,16 @@ const processFile = (loc) => {
     const staticPath = filePath(loc, STATIC_DIR);
 
     return new Promise((resolve, reject) => {
+        if (loc === "./sw.js") {
+            return resolve()
+        }
         hashFile(staticPath).then((hash) => {
             if (oldHash !== hash) {
                 staticFiles[loc] = hash;
-                replaceFile(oldHash, hash, loc).then(resolve);
             } else {
-                const oldFilePath = filePath(loc, BUILD_DIR, oldHash);
                 console.info("Nothing changed in file " + loc);
-                replaceFile(oldHash, hash, loc).then(resolve);
             }
+            replaceFile(oldHash, hash, loc).then(resolve);
         }, (error) => {
             console.error("Error hashing file " + loc);
             console.error(error);
@@ -105,6 +107,7 @@ const processServiceWorker = () => {
                 newFileData = newFileData.replace(SW_CACHE_NAME_REGEX, (match, declaration, openQuote, prefix, closeQuote) => {
                     return `${declaration}${openQuote}${prefix}+${hash}${closeQuote}`;
                 });
+                newFileData = newFileData.replace(SW_FILE_NAME_REGEX, `sw!${hash}.js`);
                 staticFiles[fileName] = hash;
 
                 const newPath = filePath(fileName, BUILD_DIR, hash);

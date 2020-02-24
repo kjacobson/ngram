@@ -159,9 +159,9 @@ class BrowserAdapter {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.onmessage = (event) => {
                 const message = JSON.parse(event.data);
-                if (message.modified && localStorage && localStorage.getItem('indexLastModified') !== message.modified) {
+                if (message.etag && localStorage && localStorage.getItem('indexETag') !== message.etag) {
                     console.log(message.url + " has changed");
-                    localStorage.setItem('indexLastModified', message.modified);
+                    localStorage.setItem('indexETag', message.etag);
 
                     if (message.type === 'refresh') {
                         document.body.classList.add('update-available');
