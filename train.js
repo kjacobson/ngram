@@ -3,9 +3,11 @@ const Promise = require('es6-promise');
 const fetch = require('isomorphic-fetch');
 const commandLineArgs = require('command-line-args');
 const stemmer = require('stemmer');
+const isWord = require('is-word');
 
-const config = require('./config.json');
+// const config = require('./config.json');
 const top5k = require('./top-5000-words.json');
+const englishWords = isWord('american-english');
 
 const args = [
   { name: 'min-words', alias: 'w', type: Number, defaultValue: 5 },
@@ -20,8 +22,8 @@ const ALPHABET = [
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
     'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
 ];
-const OXFORD_API_KEY = config.oxford.key;
-const OXFORD_APP_ID = config.oxford.app_id;
+// const OXFORD_API_KEY = config.oxford.key;
+// const OXFORD_APP_ID = config.oxford.app_id;
 
 const numLetters = settings.letters;
 const minQualifyingWords = settings['min-words'];
@@ -40,9 +42,10 @@ const getOxfordFrequencies = (words) => {
                 'app_key': OXFORD_API_KEY
             }
         }).then(response => {
+            debugger
             if (response.status >= 400) {
                 // no-op
-                console.log("request failed");
+                console.log(`request failed: ${wordString}`);
                 reject();
             }
             return response.json();
@@ -63,15 +66,14 @@ const getOxfordFrequencies = (words) => {
     });
 };
 
-const sortByFrequency = (words, frequencies) => {
-    console.log(frequencies);
+const sortByFrequency = (words, /* frequencies */) => {
     return words.map((word) => {
         const wordFrequency = word.tags[word.tags.length-1].substring(2);
         word.frequency = parseFloat(wordFrequency, 10);
         word.frequencyRank = parseInt(top5k[word.word] || 5001, 10);
-        if (frequencies) {
-            word.oxfordFrequency = frequencies[word.word];
-        }
+        // if (frequencies) {
+        //     word.oxfordFrequency = frequencies[word.word];
+        // }
         return word;  
     }).sort((a, b) => {
         if (a.frequencyRank === b.frequencyRank) {
@@ -101,6 +103,10 @@ const isOneWord = (word) => {
 // A weak proxy for eliminating abbreviations
 const containsVowels = (word) => {
     return word.word.match(/[aeiouy]/);
+};
+// Get some more pesky proper nouns out of the dataset
+const isEnglishWord = (word) => {
+    return englishWords.check(word.word);
 };
 
 const addStem = (word) => {
@@ -137,26 +143,36 @@ const fetchTopWords = (ngram, minQualifyingWords) => {
         fetch(`https://api.datamuse.com/words?sp=${ngram}*&max=${queryLimit}&md=fp`).then(response => {
             if (response.status >= 400) {
                 // no-op
-                console.log("request failed");
+                console.log(`request failed: ${ngram}`);
                 res();
             }
             return response.json();
         }).then(words => {
-            words = words.filter(isNotProperNoun).filter(isOneWord).filter(containsVowels);
-            getOxfordFrequencies(words).then((frequencies) => {
-                words = sortByFrequency(words, frequencies);
-                words = words.map(addStem);
-                console.log(words);
-                if (words.length >= minQualifyingWords && words[minQualifyingWords-1].frequency > frequencyThreshold) {
-                    addKnownNGram(ngram, words);
-                } else {
-                    // console.log("Too few matches for ngram '" + ngram);
-                }
-                res();
-            }, (err) => {
-                console.error(err);
-                res();
-            });
+            words = words.filter(isEnglishWord).filter(isNotProperNoun).filter(isOneWord).filter(containsVowels);
+            words = sortByFrequency(words);
+            words = words.map(addStem);
+            if (words.length >= minQualifyingWords && words[minQualifyingWords-1].frequency > frequencyThreshold) {
+                addKnownNGram(ngram, words);
+            } else {
+                // console.log("Too few matches for ngram '" + ngram);
+            }
+            res();
+
+            /* Oxford Stats API has been deprecated :-( */
+
+            // getOxfordFrequencies(words).then((frequencies) => {
+            //     words = sortByFrequency(words, frequencies);
+            //     words = words.map(addStem);
+            //     if (words.length >= minQualifyingWords && words[minQualifyingWords-1].frequency > frequencyThreshold) {
+            //         addKnownNGram(ngram, words);
+            //     } else {
+            //         // console.log("Too few matches for ngram '" + ngram);
+            //     }
+            //     res();
+            // }, (err) => {
+            //     console.error(err);
+            //     res();
+            // });
         }, err => {
             res();
             console.error(err);
