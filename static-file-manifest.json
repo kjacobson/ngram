@@ -3,8 +3,8 @@
         "./browser.js": "22a92272df91d72d998cb8063fc82cd4",
         "./browser.js.map": "7719b3348fcebbde46d75bd2954d454b",
         "./site.webmanifest": "7e0a6c72546e9794ac2477c41d73a550",
-        "./ngrams/3-letters.json": "230d01ca2aa7ee811d003f31793e4df8",
-        "./ngrams/2-letters.json": "c5fdea5768b2daee7d460e5e4d298921",
+        "./ngrams/3-letters.json": "059971a078166e0175c93597ae1163c6",
+        "./ngrams/2-letters.json": "4a16f85d851972b587030431b8083ac7",
         "./images/gear.svg": "93a4c5f7347a4a404154ecbe4705a760",
         "./images/spinning-top.svg": "83f3a849ccb0f5f0bdd4926eb2dbba22",
         "./images/skip.svg": "060aea5dbf6bec69ae66dfc2857af49a",
@@ -21,8 +21,8 @@
         "./images/android-chrome-192x192.png": "366a0964657ef4cbdeeabb3b8e6487da",
         "./images/mstile-310x150.png": "c556f843848eb8bdc68426b147b4f0b4",
         "./images/mstile-310x310.png": "9b11c1334106a2c2dc21ff7fdd5693a2",
-        "./images/android-chrome-512x512.png": "0504b07af2a3b782f4103f78c139901c",
-        "./sw.js": "6732ec838499115ed24cea79162db02f",
+        "./images/android-chrome-512x512.png": "7c683847daecb9efacdf45bd33b947d3",
+        "./sw.js": "e5709c019ae531f57965b9883eec3e8c",
         "./register-service-worker.js": "fda2477f0f69e368cb9cb55e58c88bc4"
     },
     "consumers": [
